@@ -1,5 +1,6 @@
 FPS = 60
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
+TITLE = 'Iron Vortex'
 LAYERS = {
 	'BG': 0,
 	'BG Detail': 1,

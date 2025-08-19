@@ -37,7 +37,7 @@ class Game:  # game
         pygame.init()  # 遊戲初始化
 
         self.display_surface = pygame.display.set_mode(size=(WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption('Contra')
+        pygame.display.set_caption(TITLE)
 
         self.clock = pygame.time.Clock()
 
