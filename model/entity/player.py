@@ -5,7 +5,7 @@ from os import walk
 from model.entity.tile import MovingPlatform
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, path, collision_sprites):
+    def __init__(self, position, groups, path, collision_sprites, shoot):
         super().__init__(groups)  # Sprite 的建構子就會自動幫你把自己加入到這些 Group 裡
         self.import_assets(path)  # 載入玩家資源
         self.frame_index = 0  # 當前動畫幀索引
@@ -31,7 +31,21 @@ class Player(pygame.sprite.Sprite):
         self.on_floor = False  # 是否在地面上
         self.duck = False  # 是否蹲下
         self.moving_floor = None  # 當前接觸的移動平台
+        
+        # interaction
+        self.shoot = shoot  # 射擊方法
+        
+        # bullet timer
+        self.can_shoot = True  # 是否可以射擊
+        self.shoot_time = None
+        self.cooldown = 200
 
+    def shoot_timer(self):
+        if not self.can_shoot:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.shoot_time >= self.cooldown:
+                self.can_shoot = True
+    
     def get_stauts(self):
         # idle
         if self.direction.x == 0 and self.on_floor:
@@ -121,6 +135,16 @@ class Player(pygame.sprite.Sprite):
             self.duck = True
         else:
             self.duck = False
+        
+        if keys[pygame.K_SPACE] and self.can_shoot:
+            direction = vector(1, 0) if self.status.split('_')[0] == 'right' else vector(-1, 0)
+            position = self.rect.center + direction * 60  # 射擊位置在玩家前方
+            y_offset = vector(0, -16) if not self.duck else vector(0, 10)
+            self.shoot(position + y_offset, direction, self)
+            
+            self.can_shoot = False
+            self.shoot_time = pygame.time.get_ticks()  # 記錄射擊時間
+        
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -187,6 +211,7 @@ class Player(pygame.sprite.Sprite):
         self.move(dt)
         self.check_contact()
         self.animate(dt)
+        self.shoot_timer()
         
         # github copilot ------
         # 保存上一幀的平台引用

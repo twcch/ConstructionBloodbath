@@ -7,6 +7,7 @@ from pytmx.util_pygame import load_pygame
 from model.entity.player import Player
 from configs.settings import *
 from model.entity.tile import Tile, CollisionTile, MovingPlatform
+from model.entity.bullet import Bullet
 
 
 # Camera, 控制玩家視角
@@ -45,8 +46,12 @@ class Game:  # game
         self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()  # 碰撞用的群組
         self.platform_sprites = pygame.sprite.Group()  # 用來儲存移動平台的群組
+        self.bullet_sprites = pygame.sprite.Group()  # 用來儲存子彈的群組
 
         self.setup()
+        
+        # bullet images
+        self.bullet_surf = pygame.image.load('assets/graphics/bullet.png').convert_alpha()
 
     def setup(self):
         tmx_map = load_pygame('assets/data/map.tmx')
@@ -72,7 +77,7 @@ class Game:  # game
             if obj.name == 'Player':
                 # Player 初始位置是 TMX 中的 obj.x, obj.y (裡的 object layer 裡每個物件會有座標)
                 # 生成 Player 物件，並加入到 all_sprites 群組，obj.x, obj.y 是 tile 的左上角座標
-                self.player = Player(position=(obj.x, obj.y), groups=self.all_sprites, path='assets/graphics/player', collision_sprites=self.collision_sprites)
+                self.player = Player(position=(obj.x, obj.y), groups=self.all_sprites, path='assets/graphics/player', collision_sprites=self.collision_sprites, shoot=self.shoot)
 
         self.platform_border_rects = []
         for obj in tmx_map.get_layer_by_name('Platforms'):
@@ -99,6 +104,16 @@ class Game:  # game
                 platform.position.y = platform.rect.y
                 platform.direction.y = -1
 
+    def bullet_collisions(self):
+        for obstacle in self.collision_sprites.sprites():
+            pygame.sprite.spritecollide(obstacle, self.bullet_sprites, True)  # 刪除與障礙物碰撞的子彈
+                    
+                    
+                    
+    def shoot(self, position, direction, entity):
+        Bullet(position=position, surface=self.bullet_surf, direction=direction, groups=[self.all_sprites, self.bullet_sprites])
+        
+    
     def run(self):
         while True:
             # 關閉遊戲
@@ -123,7 +138,8 @@ class Game:  # game
             self.all_sprites.update(dt)
             # self.all_sprites.draw(self.display_surface) # 把 all_sprites 群組裡的每一個 Sprite 的 image 畫到 self.display_surface 上，位置依照 Sprite 的 rect
             self.all_sprites.customer_draw(self.player)
-
+            self.bullet_collisions()
+            
             pygame.display.update()
 
 
