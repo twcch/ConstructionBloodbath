@@ -2,6 +2,7 @@ import pygame
 from pygame.math import Vector2 as vector
 from configs.settings import *
 from os import walk
+from model.entity.tile import MovingPlatform
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups, path, collision_sprites):
@@ -26,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         
         # vertical movement
         self.gravity = 15  # 重力加速度
-        self.jump_speed = 600  # 跳躍速度
+        self.jump_speed = 700  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.duck = False  # 是否蹲下
         self.moving_floor = None  # 當前接觸的移動平台
@@ -54,6 +55,23 @@ class Player(pygame.sprite.Sprite):
                     self.on_floor = True
                 if hasattr(sprite, 'direction'):
                     self.moving_floor = sprite
+        
+        # # github copilot ------
+        # # 創建一個略大的底部矩形以確保重疊
+        # bottom_rect = pygame.Rect(0, 0, self.rect.width * 0.8, 5)
+        # bottom_rect.midtop = self.rect.midbottom
+        
+        # for sprite in self.collision_sprites.sprites():
+        #     if sprite.rect.colliderect(bottom_rect):
+        #         if isinstance(sprite, MovingPlatform):
+        #             self.moving_floor = sprite
+        #             if self.rect.bottom > sprite.rect.top:
+        #                 self.rect.bottom = sprite.rect.top
+        #                 self.position.y = self.rect.y
+        #                 self.direction.y = 0
+        #             self.on_floor = True
+        # # github copilot ------
+        
     
     def import_assets(self, path):
         # 這裡可以載入玩家的圖片、音效等資源
@@ -169,3 +187,19 @@ class Player(pygame.sprite.Sprite):
         self.move(dt)
         self.check_contact()
         self.animate(dt)
+        
+        # github copilot ------
+        # 保存上一幀的平台引用
+        self.previous_moving_floor = self.moving_floor
+        self.moving_floor = None
+        
+        # 其他更新邏輯...
+        self.check_contact()  # 這裡會檢測移動平台並更新 self.moving_floor
+        
+        # 如果站在移動平台上
+        if self.moving_floor:
+            # 跟隨平台移動
+            self.position.y += self.moving_floor.direction.y * self.moving_floor.speed * dt
+            self.rect.y = round(self.position.y)
+            self.on_floor = True
+        # github copilot ------
