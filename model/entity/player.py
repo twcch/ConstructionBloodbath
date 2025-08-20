@@ -24,6 +24,34 @@ class Player(pygame.sprite.Sprite):
         self.old_rect = self.rect.copy()  # 用來儲存上幀的 rect，避免碰撞檢測時使用當前 rect 導致錯誤
         self.collision_sprites = collision_sprites  # 碰撞用的群組
         
+        # vertical movement
+        self.gravity = 15  # 重力加速度
+        self.jump_speed = 600  # 跳躍速度
+        self.on_floor = False  # 是否在地面上
+        self.duck = False  # 是否蹲下
+
+    def get_stauts(self):
+        # idle
+        if self.direction.x == 0 and self.on_floor:
+            self.status = self.status.split('_')[0] + '_idle'
+        
+        # jump
+        if self.direction.y != 0 and not self.on_floor:
+            self.status = self.status.split('_')[0] + '_jump'
+
+        # duck
+        if self.duck and self.on_floor:
+            self.status = self.status.split('_')[0] + '_duck'
+
+    def check_contact(self):
+        bottom_rect = pygame.Rect(0, 0, self.rect.width, 5)
+        bottom_rect.midbottom = self.rect.midbottom
+        
+        for sprite in self.collision_sprites.sprites():
+            if bottom_rect.colliderect(bottom_rect):
+                if self.direction.y > 0:
+                    self.on_floor = True
+    
     def import_assets(self, path):
         # 這裡可以載入玩家的圖片、音效等資源
         self.animations = {}
@@ -44,24 +72,6 @@ class Player(pygame.sprite.Sprite):
                     surface = pygame.image.load(file_path).convert_alpha()
                     self.animations[direction].append(surface)
 
-    # def import_assets(self, path):
-    #     # 這裡可以載入玩家的圖片、音效等資源
-    #     self.animations = {}
-    #     for index, folder in enumerate(walk(path)):
-    #         if index == 0:
-    #             for name in folder[1]:
-    #                 self.animations[name] = []
-    #         else:
-    #             for filename in sorted(folder[2], key=lambda string: int(string.split('.')[0])):
-    #                 path = folder[0].replace('\\', '/') + '/' + filename
-    #                 surface = pygame.image.load(path).convert_alpha()
-    #                 key = folder[0].split('\\')[1]
-    #                 self.animations[key].append(surface)
-                    
-    #                 if filename.endswith('.png'):
-    #                     surface = pygame.image.load(f'{path}/{folder[0].split("/")[-1]}/{filename}').convert_alpha()
-    #                     self.animations[folder[0].split("/")[-1]].append(surface)
-    
     def animate(self, dt):
         # 更新動畫幀索引
         self.frame_index += 7 * dt
@@ -76,17 +86,20 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_RIGHT]:
             self.direction.x = 1
+            self.status = 'right'
         elif keys[pygame.K_LEFT]:
             self.direction.x = -1
+            self.status = 'left'
         else:
             self.direction.x = 0
 
-        if keys[pygame.K_UP]:
-            self.direction.y = -1
-        elif keys[pygame.K_DOWN]:
-            self.direction.y = 1
+        if keys[pygame.K_UP] and self.on_floor:
+            self.direction.y = -self.jump_speed
+            
+        if keys[pygame.K_DOWN]:
+            self.duck = True
         else:
-            self.direction.y = 0
+            self.duck = False
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
@@ -103,25 +116,36 @@ class Player(pygame.sprite.Sprite):
                 else:
                     if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.rect.top:
                         self.rect.bottom = sprite.rect.top
+                        self.on_floor = True
                     if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
                         self.rect.top = sprite.rect.bottom
                     self.position.y = self.rect.y
+                    self.direction.y = 0
+                    
+        if self.on_floor and self.direction.y != 0:
+            self.on_floor = False
         
     
     # use the input to move the player
     def move(self, dt):
+        # 修正蹲下移動
+        if self.duck and self.on_floor:
+            self.direction.x = 0
+        
         # 浮點座標 vs 畫面座標分離
         # self.position: float (高精度、可累積細小位移，不受取整誤差影響)
         # self.rect: int (pygame blit 需要整數像素)
         # 每幀: 更新 position (float) → 再同步到 rect (int)
-
+        
         # horizontal movement
         self.position.x += self.direction.x * self.speed * dt
         self.rect.x = round(self.position.x)
         self.collision('horizontal')
 
         # vertical movement
-        self.position.y += self.direction.y * self.speed * dt
+        # gravity
+        self.direction.y += self.gravity  # 重力影響
+        self.position.y += self.direction.y * dt
         self.rect.y = round(self.position.y)
         self.collision('vertical')
 
@@ -129,5 +153,7 @@ class Player(pygame.sprite.Sprite):
         self.old_rect = self.rect.copy()
         
         self.input()
+        self.get_stauts()
         self.move(dt)
+        self.check_contact()
         self.animate(dt)
