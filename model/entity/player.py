@@ -45,10 +45,10 @@ class Player(pygame.sprite.Sprite):
 
     def check_contact(self):
         bottom_rect = pygame.Rect(0, 0, self.rect.width, 5)
-        bottom_rect.midbottom = self.rect.midbottom
+        bottom_rect.midtop = self.rect.midbottom
         
         for sprite in self.collision_sprites.sprites():
-            if bottom_rect.colliderect(bottom_rect):
+            if sprite.rect.colliderect(bottom_rect):
                 if self.direction.y > 0:
                     self.on_floor = True
     
