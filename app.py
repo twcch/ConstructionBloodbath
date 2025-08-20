@@ -6,7 +6,7 @@ from pytmx.util_pygame import load_pygame
 
 from model.entity.player import Player
 from configs.settings import *
-from model.entity.tile import Tile, CollisionTile
+from model.entity.tile import Tile, CollisionTile, MovingPlatform
 
 
 # Camera, 控制玩家視角
@@ -44,6 +44,7 @@ class Game:  # game
         # Groups
         self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()  # 碰撞用的群組
+        self.platform_sprites = pygame.sprite.Group()  # 用來儲存移動平台的群組
 
         self.setup()
 
@@ -73,6 +74,31 @@ class Game:  # game
                 # 生成 Player 物件，並加入到 all_sprites 群組，obj.x, obj.y 是 tile 的左上角座標
                 self.player = Player(position=(obj.x, obj.y), groups=self.all_sprites, path='assets/graphics/player', collision_sprites=self.collision_sprites)
 
+        self.platform_border_rects = []
+        for obj in tmx_map.get_layer_by_name('Platforms'):
+            if obj.name == 'Platform':
+                MovingPlatform(position=(obj.x, obj.y), surface=obj.image, groups=[self.all_sprites, self.collision_sprites, self.platform_sprites])
+            else:
+                border_rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                self.platform_border_rects.append(border_rect)
+
+    def platform_collisions(self):
+        for platform in self.platform_sprites.sprites():
+            for border in self.platform_border_rects:
+                if platform.rect.colliderect(border):
+                    if platform.direction.y < 0: # up
+                        platform.rect.top = border.bottom
+                        platform.position.y = platform.rect.y
+                        platform.direction.y = 1
+                    else: # down
+                        platform.rect.bottom = border.top
+                        platform.position.y = platform.rect.y
+                        platform.direction.y = -1
+            if platform.rect.colliderect(self.player.rect) and self.player.rect.centery > platform.rect.centery:
+                platform.rect.bottom = self.player.rect.top
+                platform.position.y = platform.rect.y
+                platform.direction.y = -1
+
     def run(self):
         while True:
             # 關閉遊戲
@@ -93,6 +119,7 @@ class Game:  # game
             self.display_surface.fill((249, 131, 103))
 
             # 畫面更新
+            self.platform_collisions()
             self.all_sprites.update(dt)
             # self.all_sprites.draw(self.display_surface) # 把 all_sprites 群組裡的每一個 Sprite 的 image 畫到 self.display_surface 上，位置依照 Sprite 的 rect
             self.all_sprites.customer_draw(self.player)

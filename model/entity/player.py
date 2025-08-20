@@ -29,6 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_speed = 600  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.duck = False  # 是否蹲下
+        self.moving_floor = None  # 當前接觸的移動平台
 
     def get_stauts(self):
         # idle
@@ -40,7 +41,7 @@ class Player(pygame.sprite.Sprite):
             self.status = self.status.split('_')[0] + '_jump'
 
         # duck
-        if self.duck and self.on_floor:
+        if self.on_floor and self.duck:
             self.status = self.status.split('_')[0] + '_duck'
 
     def check_contact(self):
@@ -51,6 +52,8 @@ class Player(pygame.sprite.Sprite):
             if sprite.rect.colliderect(bottom_rect):
                 if self.direction.y > 0:
                     self.on_floor = True
+                if hasattr(sprite, 'direction'):
+                    self.moving_floor = sprite
     
     def import_assets(self, path):
         # 這裡可以載入玩家的圖片、音效等資源
@@ -146,8 +149,17 @@ class Player(pygame.sprite.Sprite):
         # gravity
         self.direction.y += self.gravity  # 重力影響
         self.position.y += self.direction.y * dt
+        
+        # glue the player to the platform
+        if self.moving_floor and self.moving_floor.direction.y > 0 and self.direction.y > 0:
+            self.position.y = 0
+            self.rect.bottom = self.moving_floor.rect.top
+            self.position.y = self.rect.y
+            self.on_floor = True
+                    
         self.rect.y = round(self.position.y)
         self.collision('vertical')
+        self.moving_floor = None  # 重置移動平台接觸狀態
 
     def update(self, dt):
         self.old_rect = self.rect.copy()
