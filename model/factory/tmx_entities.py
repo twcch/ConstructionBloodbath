@@ -1,19 +1,21 @@
 import pygame
+
 from configs.settings import LAYERS
-from model.entity.tile import Tile, CollisionTile, MovingPlatform
-from model.entity.player import Player
 from model.entity.enemy import Enemy
+from model.entity.player import Player
+from model.entity.tile import Tile, CollisionTile, MovingPlatform
 from model.service.assets import AssetManager
+
 
 class TMXEntityFactory:
     def __init__(
-        self,
-        assets: AssetManager,
-        all_sprites: pygame.sprite.Group,
-        collision_sprites: pygame.sprite.Group,
-        platform_sprites: pygame.sprite.Group,
-        vulnerable_sprites: pygame.sprite.Group,
-        shoot_cb
+            self,
+            assets: AssetManager,
+            all_sprites: pygame.sprite.Group,
+            collision_sprites: pygame.sprite.Group,
+            platform_sprites: pygame.sprite.Group,
+            vulnerable_sprites: pygame.sprite.Group,
+            shoot_cb
     ):
         self.assets = assets
         self.all_sprites = all_sprites

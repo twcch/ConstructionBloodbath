@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
+
 import pygame
-from pygame.math import Vector2 as vector
 
 # Ensure project root is on sys.path
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +25,8 @@ def main():
     collision_sprites = pygame.sprite.Group()
 
     try:
-        player = Player(position=(100, 100), groups=[all_sprites], path='assets/graphics/player', collision_sprites=collision_sprites, shoot=dummy_shoot)
+        player = Player(position=(100, 100), groups=[all_sprites], path='assets/graphics/player',
+                        collision_sprites=collision_sprites, shoot=dummy_shoot)
         print("SMOKE_OK: Player assets loaded. Animations keys:", sorted(player.animations.keys()))
     except Exception as e:
         print("SMOKE_FAIL:", repr(e))

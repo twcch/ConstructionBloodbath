@@ -1,12 +1,13 @@
 import pygame
 from pytmx.util_pygame import load_pygame
 
+
 class AssetManager:
     def __init__(self):
         self._images: dict[str, pygame.Surface] = {}
         self._sounds: dict[str, pygame.mixer.Sound] = {}
         self._tmx: dict[str, object] = {}
-    
+
     def image(self, path: str) -> pygame.Surface:
         if path not in self._images:
             self._images[path] = pygame.image.load(path).convert_alpha()

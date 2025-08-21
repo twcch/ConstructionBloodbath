@@ -6,8 +6,9 @@ from pygame.math import Vector2 as vector
 from configs.settings import *
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.overlay import Overlay
-from model.service.assets import AssetManager
 from model.factory.tmx_entities import TMXEntityFactory
+from model.service.assets import AssetManager
+
 
 # Camera, 控制玩家視角
 class AllSprites(pygame.sprite.Group):
@@ -17,11 +18,11 @@ class AllSprites(pygame.sprite.Group):
         self.offset = vector()
         self.half_w = WINDOW_WIDTH / 2
         self.half_h = WINDOW_HEIGHT / 2
-        
+
         # sky via AssetManager
         self.fg_sky = assets.image('assets/graphics/sky/fg_sky.png')
         self.bg_sky = assets.image('assets/graphics/sky/bg_sky.png')
-        
+
         # dimensions
         self.padding = self.half_w
         self.sky_width = self.bg_sky.get_width()
@@ -33,7 +34,7 @@ class AllSprites(pygame.sprite.Group):
             x_position = -self.padding + (x * self.sky_width)
             # 可將 2.5 與 850 移到 settings 做成常數
             self.display_surface.blit(self.bg_sky, (x_position - self.offset.x / 2.5, 850 - self.offset.y / 2.5))
-            self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2,   850 - self.offset.y / 2))
+            self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2, 850 - self.offset.y / 2))
 
     def _render_sprites(self):
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
@@ -75,7 +76,7 @@ class Game:  # game
         # bullet images
         self.bullet_surf = self.assets.image('assets/graphics/bullet.png')
         self.fire_surfs = [self.assets.image(f'assets/graphics/fire/{i}.png') for i in range(1, 2)]
-        
+
         # music
         self.music = self.assets.sound('assets/audio/music.wav')
         self.music.play(loops=-1)
@@ -96,11 +97,11 @@ class Game:  # game
         for platform in self.platform_sprites.sprites():
             for border in self.platform_border_rects:
                 if platform.rect.colliderect(border):
-                    if platform.direction.y < 0: # up
+                    if platform.direction.y < 0:  # up
                         platform.rect.top = border.bottom
                         platform.position.y = platform.rect.y
                         platform.direction.y = 1
-                    else: # down
+                    else:  # down
                         platform.rect.bottom = border.top
                         platform.position.y = platform.rect.y
                         platform.direction.y = -1
@@ -122,7 +123,8 @@ class Game:  # game
                 target.damage()
 
     def shoot(self, position: vector, direction: vector, entity: pygame.sprite.Sprite) -> None:
-        Bullet(position=position, surface=self.bullet_surf, direction=direction, groups=[self.all_sprites, self.bullet_sprites])
+        Bullet(position=position, surface=self.bullet_surf, direction=direction,
+               groups=[self.all_sprites, self.bullet_sprites])
         FireAnimation(entity=entity, surface_list=self.fire_surfs, direction=direction, groups=self.all_sprites)
 
     def handle_events(self) -> bool:
