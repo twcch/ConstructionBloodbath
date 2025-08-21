@@ -15,55 +15,57 @@ class AllSprites(pygame.sprite.Group):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.offset = vector()
+        self.half_w = WINDOW_WIDTH / 2
+        self.half_h = WINDOW_HEIGHT / 2
         
         # sky via AssetManager
         self.fg_sky = assets.image('assets/graphics/sky/fg_sky.png')
         self.bg_sky = assets.image('assets/graphics/sky/bg_sky.png')
         
         # dimensions
-        self.padding = WINDOW_WIDTH / 2
+        self.padding = self.half_w
         self.sky_width = self.bg_sky.get_width()
         map_width = tmx_map.tilewidth * tmx_map.width + (2 * self.padding)
-        self.sky_num = int(map_width // self.sky_width)  # 計算需要多少張天空圖片來覆蓋整個地圖
+        self.sky_num = int(map_width // self.sky_width)
 
-    def customer_draw(self, player):
-        # 計算相機偏移量
-        self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
-        self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
-        
+    def _render_background(self):
         for x in range(self.sky_num):
             x_position = -self.padding + (x * self.sky_width)
-            self.display_surface.blit(self.bg_sky, (x_position - self.offset.x / 2.5, 850 - self.offset.y / 2.5))  # 背景天空
-            self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2, 850 - self.offset.y / 2))
+            # 可將 2.5 與 850 移到 settings 做成常數
+            self.display_surface.blit(self.bg_sky, (x_position - self.offset.x / 2.5, 850 - self.offset.y / 2.5))
+            self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2,   850 - self.offset.y / 2))
 
+    def _render_sprites(self):
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
             offset_rect = sprite.image.get_rect(center=sprite.rect.center)
             offset_rect.center -= self.offset
             self.display_surface.blit(sprite.image, offset_rect)
 
+    def render(self, player) -> None:
+        # 計算相機偏移量
+        self.offset.x = player.rect.centerx - self.half_w
+        self.offset.y = player.rect.centery - self.half_h
+        self._render_background()
+        self._render_sprites()
+
 
 class Game:  # game
     def __init__(self):
-        pygame.init()  # 遊戲初始化
-
+        pygame.init()
         self.display_surface = pygame.display.set_mode(size=(WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(TITLE)
-
         self.clock = pygame.time.Clock()
-        
         # managers
         self.assets = AssetManager()
-
         # 先載入 TMX 供 AllSprites 計算 sky_num
         self._map_path = 'assets/data/map.tmx'
         tmx_map = self.assets.tmx(self._map_path)
-
         # Groups
         self.all_sprites = AllSprites(self.assets, tmx_map)
-        self.collision_sprites = pygame.sprite.Group()  # 碰撞用的群組
-        self.platform_sprites = pygame.sprite.Group()  # 用來儲存移動平台的群組
-        self.bullet_sprites = pygame.sprite.Group()  # 用來儲存子彈的群組
-        self.vulnerable_sprites = pygame.sprite.Group()  # 用來儲存無敵狀態的敵人
+        self.collision_sprites = pygame.sprite.Group()
+        self.platform_sprites = pygame.sprite.Group()
+        self.bullet_sprites = pygame.sprite.Group()
+        self.vulnerable_sprites = pygame.sprite.Group()
 
         self.setup()
 
@@ -77,7 +79,7 @@ class Game:  # game
         # music
         self.music = self.assets.sound('assets/audio/music.wav')
         self.music.play(loops=-1)
-        self.music.set_volume(0.5)
+        self.music.set_volume(MUSIC_VOLUME)  # 使用設定常數
 
     def setup(self):
         factory = TMXEntityFactory(
@@ -107,48 +109,47 @@ class Game:  # game
                 platform.position.y = platform.rect.y
                 platform.direction.y = -1
 
-    def bullet_collisions(self):
-        for obstacle in self.collision_sprites.sprites():
-            pygame.sprite.spritecollide(obstacle, self.bullet_sprites, True)  # 刪除與障礙物碰撞的子彈
-        
-        # entities
-        for sprite in self.vulnerable_sprites.sprites():
-            if pygame.sprite.spritecollide(sprite, self.bullet_sprites, True, pygame.sprite.collide_mask):  # 刪除與敵人碰撞的子彈
-                sprite.damage()
-                
-    def shoot(self, position, direction, entity):
+    def bullet_collisions(self) -> None:
+        # 子彈 vs 靜態障礙（矩形碰撞即可）
+        pygame.sprite.groupcollide(self.bullet_sprites, self.collision_sprites, True, False)
+
+        # 子彈 vs 可受傷實體（使用遮罩）
+        hits = pygame.sprite.groupcollide(
+            self.bullet_sprites, self.vulnerable_sprites, True, False, collided=pygame.sprite.collide_mask
+        )
+        for _, targets in hits.items():
+            for target in targets:
+                target.damage()
+
+    def shoot(self, position: vector, direction: vector, entity: pygame.sprite.Sprite) -> None:
         Bullet(position=position, surface=self.bullet_surf, direction=direction, groups=[self.all_sprites, self.bullet_sprites])
-        
         FireAnimation(entity=entity, surface_list=self.fire_surfs, direction=direction, groups=self.all_sprites)
-        
-    def run(self):
+
+    def handle_events(self) -> bool:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+        return True
+
+    def update(self, dt: float) -> None:
+        self.platform_collisions()
+        self.all_sprites.update(dt)
+        self.bullet_collisions()
+
+    def draw(self) -> None:
+        self.display_surface.fill(BG_COLOR)
+        self.all_sprites.render(self.player)  # 原 customer_draw 改為 render
+        self.overlay.display()
+        pygame.display.update()
+
+    def run(self) -> None:
         while True:
-            # 關閉遊戲
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            # 取得單位 (s): 以「時間」而非「幀」來移動 (delta time)
-            # 位移用：位移量 = 速度(像素/秒) × dt(秒)
-            # --- 說明:
-            # --- 設計理念就是把「移動邏輯」與「幀率 (FPS)」脫鉤，讓角色速度以「真實時間」為準，而不是以「每幀」為準
-            # --- 例如 speed=400、dt=0.016 (約 60 FPS)，單幀位移 ≈ 6.4 px。
-            # --- 即使 FPS 波動，1 秒跑的距離保持不變。
+            if not self.handle_events():
+                pygame.quit()
+                sys.exit()
             dt = self.clock.tick(FPS) / 1000
-
-            # 視窗背景
-            self.display_surface.fill((249, 131, 103))
-
-            # 畫面更新
-            self.platform_collisions()
-            self.all_sprites.update(dt)
-            # self.all_sprites.draw(self.display_surface) # 把 all_sprites 群組裡的每一個 Sprite 的 image 畫到 self.display_surface 上，位置依照 Sprite 的 rect
-            self.all_sprites.customer_draw(self.player)
-            self.bullet_collisions()
-            self.overlay.display()
-            
-            pygame.display.update()
+            self.update(dt)
+            self.draw()
 
 
 if __name__ == '__main__':
