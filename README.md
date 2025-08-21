@@ -13,8 +13,6 @@ Enterprise‑grade 2D side‑scrolling shooter built with Python 3.11 and Pygame
 
 Iron Vortex is a fast‑paced single‑player side‑scroll shooter blending classic run‑and‑gun with modern polish. You play as an Ares Unit operative infiltrating Helix Dominion facilities to destroy the ultimate weapon “Iron Vortex.” Core design goals focus on tight input latency, readable combat, scalable content, and clear separation of concerns for maintainability.
 
-Authoritative design reference: [docs/專案規格書.md](docs/專案規格書.md)
-
 ## Features
 
 - Tight movement and combat loop (move, jump, shoot; responsive and predictable)
@@ -85,8 +83,6 @@ python app.py
 
 ## Gameplay and Controls
 
-From the in‑game help and design spec ([docs/專案規格書.md](docs/專案規格書.md)):
-
 - Arrow Keys: Move/Jump
 - Space: Shoot
 
@@ -97,8 +93,6 @@ Game flow: Main Menu → Stage progression (enemies → power‑ups → Boss) �
 - Levels authored in Tiled: [assets/data/map.tmx](assets/data/map.tmx), tilesets in [assets/data/](assets/data)
 - Graphics: [assets/graphics/](assets/graphics) (e.g., bullet sprite at [assets/graphics/bullet.png](assets/graphics/bullet.png))
 - Audio: [assets/audio/](assets/audio) (e.g., [bullet.wav](assets/audio/bullet.wav), [hit.wav](assets/audio/hit.wav), [music.wav](assets/audio/music.wav))
-
-Use [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py) to validate presence/paths during CI or before packaging.
 
 ## Project Structure
 
@@ -127,7 +121,6 @@ ConstructionBloodbath/
 - Code style: PEP 8, type hints encouraged for domain services/entities
 - Formatting/Linting: integrate Black/Flake8/Mypy as needed
 - Coverage: Python coverage supported (see IDE config traces in project settings)
-- Asset smoke testing: [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py)
 
 ## Roadmap
 
