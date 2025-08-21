@@ -2,13 +2,8 @@ import sys
 
 import pygame
 from pygame.math import Vector2 as vector
-from pytmx.util_pygame import load_pygame
 
-from model.entity.player import Player
 from configs.settings import *
-from model.entity.tile import Tile, CollisionTile, MovingPlatform
-from model.entity.bullet import Bullet, FireAnimation
-from model.entity.enemy import Enemy
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.overlay import Overlay
 from model.service.assets import AssetManager
