@@ -9,7 +9,6 @@ from configs.settings import *
 from model.entity.tile import Tile, CollisionTile, MovingPlatform
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.enemy import Enemy
-from model.entity.overlay import Overlay
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.overlay import Overlay
 from model.service.assets import AssetManager
@@ -17,19 +16,16 @@ from model.factory.tmx_entities import TMXEntityFactory
 
 # Camera, 控制玩家視角
 class AllSprites(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self, assets, tmx_map):
         super().__init__()
-        # 抓取目前遊戲主畫布 (pygame.display.set_mode() 建立的 surface)
         self.display_surface = pygame.display.get_surface()
-        # 偏移量，用來決定地圖相對於玩家的捲動位置
         self.offset = vector()
         
-        # sky
-        self.fg_sky = pygame.image.load('assets/graphics/sky/fg_sky.png').convert_alpha()
-        self.bg_sky = pygame.image.load('assets/graphics/sky/bg_sky.png').convert_alpha()
-        tmx_map = load_pygame('assets/data/map.tmx')
+        # sky via AssetManager
+        self.fg_sky = assets.image('assets/graphics/sky/fg_sky.png')
+        self.bg_sky = assets.image('assets/graphics/sky/bg_sky.png')
         
-        ## dimensions
+        # dimensions
         self.padding = WINDOW_WIDTH / 2
         self.sky_width = self.bg_sky.get_width()
         map_width = tmx_map.tilewidth * tmx_map.width + (2 * self.padding)
@@ -37,7 +33,6 @@ class AllSprites(pygame.sprite.Group):
 
     def customer_draw(self, player):
         # 計算相機偏移量
-        # 玩家座標 (player.rect.centerx, player.rect.centery) 減掉螢幕中心點 → 得到「相機需要偏移多少」才能讓玩家保持在螢幕中心
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
         self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
         
@@ -46,12 +41,10 @@ class AllSprites(pygame.sprite.Group):
             self.display_surface.blit(self.bg_sky, (x_position - self.offset.x / 2.5, 850 - self.offset.y / 2.5))  # 背景天空
             self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2, 850 - self.offset.y / 2))
 
-        # 繪製所有 sprites
-        # 遍歷群組裡的所有物件
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
-            offset_rect = sprite.image.get_rect(center=sprite.rect.center)  # 先用 sprite 的座標取得原始位置
-            offset_rect.center -= self.offset  # 再扣掉相機偏移量，得到「在螢幕上的最終位置」
-            self.display_surface.blit(sprite.image, offset_rect)  # 把 sprite 畫到畫布上
+            offset_rect = sprite.image.get_rect(center=sprite.rect.center)
+            offset_rect.center -= self.offset
+            self.display_surface.blit(sprite.image, offset_rect)
 
 
 class Game:  # game
@@ -66,8 +59,12 @@ class Game:  # game
         # managers
         self.assets = AssetManager()
 
+        # 先載入 TMX 供 AllSprites 計算 sky_num
+        self._map_path = 'assets/data/map.tmx'
+        tmx_map = self.assets.tmx(self._map_path)
+
         # Groups
-        self.all_sprites = AllSprites()
+        self.all_sprites = AllSprites(self.assets, tmx_map)
         self.collision_sprites = pygame.sprite.Group()  # 碰撞用的群組
         self.platform_sprites = pygame.sprite.Group()  # 用來儲存移動平台的群組
         self.bullet_sprites = pygame.sprite.Group()  # 用來儲存子彈的群組
