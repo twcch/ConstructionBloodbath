@@ -1,9 +1,6 @@
 # 工地血戰 (Construction Bloodbath)
 
-<img alt="Python" src="https://img.shields.io/badge/python-3.11-blue.svg">
-<img alt="Pygame" src="https://img.shields.io/badge/pygame-latest-green.svg">
-<img alt="License" src="https://img.shields.io/badge/license-MIT-red.svg">
-<img alt="Status" src="https://img.shields.io/badge/status-development-yellow.svg">
+<img alt="Python" src="https://img.shields.io/badge/python-3.11-blue.svg"> <img alt="Pygame" src="https://img.shields.io/badge/pygame-latest-green.svg"> <img alt="License" src="https://img.shields.io/badge/license-MIT-red.svg"> <img alt="Status" src="https://img.shields.io/badge/status-development-yellow.svg">
 
 A fast-paced 2D side-scrolling shooter game inspired by Contra classics, featuring modern sci-fi elements and intense combat scenarios.
 
