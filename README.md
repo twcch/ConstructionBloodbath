@@ -79,7 +79,6 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
-python scripts/smoke_test_assets.py
 ```
 
 If the smoke test passes, assets are present and loadable.
@@ -107,11 +106,8 @@ python app.py
 
 From the in‑game help and design spec ([docs/專案規格書.md](docs/專案規格書.md)):
 
-- Arrow Keys: Move
-- Z: Jump
-- X: Shoot
-- ESC: Pause
-- Enter: Confirm (menus)
+- Arrow Keys: Move/Jump
+- Space: Shoot
 
 Game flow: Main Menu → Stage progression (enemies → power‑ups → Boss) → Results.
 
@@ -126,7 +122,7 @@ Use [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py) to validate pre
 ## Project Structure
 
 ```
-.
+ConstructionBloodbath/
 ├─ app.py
 ├─ requirements.txt
 ├─ configs/
@@ -135,18 +131,14 @@ Use [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py) to validate pre
 │  ├─ entity/
 │  ├─ factory/
 │  └─ service/
-├─ assets/
-│  ├─ audio/
-│  ├─ graphics/
-│  └─ data/
-│     ├─ map.tmx
-│     ├─ Platforms.tsx
-│     ├─ Subway_tiles_x4.tsx
-│     └─ wall_subway.tsx
-├─ scripts/
-│  └─ smoke_test_assets.py
-└─ docs/
-   └─ 專案規格書.md
+└─ assets/
+   ├─ audio/
+   ├─ graphics/
+   └─ data/
+      ├─ map.tmx
+      ├─ Platforms.tsx
+      ├─ Subway_tiles_x4.tsx
+      └─ wall_subway.tsx
 ```
 
 ## Quality and Tooling
