@@ -4,15 +4,18 @@
 
 A fast-paced 2D side-scrolling shooter game inspired by Contra classics, featuring modern sci-fi elements and intense combat scenarios.
 
-Overview
+## Overview
+
 IronVortex is a high-octane 2D action game developed as the final project for the "Python Programming and Interactive Game Design" course at National Cheng Kung University. Set in a dystopian future, players take on the role of an elite agent tasked with infiltrating enemy territory to destroy the catastrophic "Iron Vortex" weapon.
 
-Story
+## Story
+
 In the year 21XX, the world has fallen into chaos. A mysterious organization known as "Helix Dominion" has developed an ultimate weapon codenamed "Iron Vortex" - a fusion of nanomachinery and quantum energy that could reshape the world order within hours.
 
 As an elite agent of the "Ares Unit" special forces, your mission is to infiltrate Helix Dominion's military stronghold, destroy the Iron Vortex, and end their sinister conspiracy before it's too late.
 
-Features
+## Features
+
 Intense Combat System: Fast-paced gameplay with fluid movement and precise shooting mechanics
 Progressive Weapon System: Collect upgrades to enhance your firepower with rifles and shotguns
 Dynamic Enemy AI: Face various enemy types from standard infantry to powerful bosses
