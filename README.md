@@ -5,9 +5,7 @@ Enterprise‑grade 2D side‑scrolling shooter built with Python 3.11 and Pygame
 - Runtime: Python 3.11 + Pygame
 - Entry point: [app.py](app.py)
 - Config: [configs/settings.py](configs/settings.py)
-- Design doc: [docs/專案規格書.md](docs/專案規格書.md)
 - Assets: [assets/](assets), Maps: [assets/data/map.tmx](assets/data/map.tmx), Tilesets: [assets/data/Platforms.tsx](assets/data/Platforms.tsx), [assets/data/Subway_tiles_x4.tsx](assets/data/Subway_tiles_x4.tsx), [assets/data/wall_subway.tsx](assets/data/wall_subway.tsx)
-- Smoke test: [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py)
 - Dependencies: [requirements.txt](requirements.txt)
 - License: [LICENSE](LICENSE)
 
