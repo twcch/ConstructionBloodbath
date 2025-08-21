@@ -1,4 +1,4 @@
-# 工地血戰 (Construction Bloodbath)
+# Construction Bloodbath (工地血戰)
 
 Enterprise‑grade 2D side‑scrolling shooter built with Python 3.11 and Pygame. This repository contains a production‑ready foundation for a Contra‑like action game featuring responsive controls, modular architecture, data‑driven levels, and an assets pipeline optimized for iteration.
 
