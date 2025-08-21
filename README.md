@@ -132,10 +132,14 @@ ConstructionBloodbath/
 
 ## Contributing
 
-- Fork the repo, create a feature branch, open a PR
-- Keep gameplay constants in [configs/settings.py](configs/settings.py)
-- Follow domain boundaries: entity/factory/service separation
-- Add/update smoke tests for new assets
+We enthusiastically welcome contributions from the community! Every pull request (PR) is carefully reviewed, and we strive to incorporate meaningful improvements into the production environment.
+How to Contribute:
+
+1. Fork the repository.
+2. Create a new branch for your feature/fix.
+3. Make sure to follow the existing project structure to make you change and test them locally.
+4. Update the relevant documentations.
+5. Submit a pull request with a clear description.
 
 ## License
 
@@ -150,9 +154,3 @@ If you have any questions or suggestions, feel free to reach out to us:
 Email: twcch1218 [at] gmail.com
 
 Thank you for your interest in ConstructionBloodbath! We look forward to your contributions and hope you enjoy using and improving this project.
-
-## Acknowledgements
-
-- Course: National Cheng Kung University — “Python Programming and Interactive Game Design”
-- Inspirations: Contra, Metal Slug
-- See design doc for creative direction and narrative:
