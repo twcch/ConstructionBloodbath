@@ -9,6 +9,7 @@ from configs.settings import *
 from model.entity.tile import Tile, CollisionTile, MovingPlatform
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.enemy import Enemy
+from model.entity.overlay import Overlay
 
 # Camera, 控制玩家視角
 class AllSprites(pygame.sprite.Group):
@@ -66,7 +67,10 @@ class Game:  # game
         self.vulnerable_sprites = pygame.sprite.Group()  # 用來儲存無敵狀態的敵人
 
         self.setup()
-        
+
+        # overlay
+        self.overlay = Overlay(self.player)
+
         # bullet images
         self.bullet_surf = pygame.image.load('assets/graphics/bullet.png').convert_alpha()
         self.fire_surfs = [pygame.image.load(f'assets/graphics/fire/{i}.png').convert_alpha() for i in range(1, 2)]
@@ -176,6 +180,7 @@ class Game:  # game
             # self.all_sprites.draw(self.display_surface) # 把 all_sprites 群組裡的每一個 Sprite 的 image 畫到 self.display_surface 上，位置依照 Sprite 的 rect
             self.all_sprites.customer_draw(self.player)
             self.bullet_collisions()
+            self.overlay.display()
             
             pygame.display.update()
 
