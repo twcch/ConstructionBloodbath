@@ -10,7 +10,8 @@ LAYERS = {
 }
 
 # Visual / audio constants
-BG_COLOR = (35, 20, 50)
+#BG_COLOR = (35, 20, 50)
+BG_COLOR = (0, 0, 0)  # Black background
 MUSIC_VOLUME = 0.5
 
 # Optional: sprite layer mapping (若你用 sprite.z，可用這個統一)
