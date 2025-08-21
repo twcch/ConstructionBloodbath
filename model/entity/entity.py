@@ -3,6 +3,7 @@ from pygame.math import Vector2 as vector
 from configs.settings import *
 from os import walk
 from math import sin
+from pathlib import Path
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, position, path, groups, shoot):
@@ -94,21 +95,42 @@ class Entity(pygame.sprite.Sprite):
                 self.is_vulnerable = True
     
     def import_assets(self, path):
-        # 這裡可以載入玩家的圖片、音效等資源
+        # 跨平台載入動畫資源 (Windows/MacOS 都可)
+        base = Path(path)
         self.animations = {}
+
+        if not base.exists():
+            return
+
+        # 只走訪第一層子資料夾 (方向資料夾)
+        for dir_path in sorted([p for p in base.iterdir() if p.is_dir()]):
+            direction = dir_path.name
+            self.animations[direction] = []
+
+            # 依檔名排序，優先以數字排序，否則以字串
+            def sort_key(p: Path):
+                stem = p.stem
+                return (0, int(stem)) if stem.isdigit() else (1, stem.lower())
+
+            for file_path in sorted([p for p in dir_path.iterdir() if p.is_file()], key=sort_key):
+                surface = pygame.image.load(str(file_path)).convert_alpha()
+                self.animations[direction].append(surface)
         
-        # Walk through the directory structure
-        for index, (root, dirs, files) in enumerate(walk(path)):
-            if index == 0:
-                # First iteration - initialize animation lists for each direction
-                for name in dirs:
-                    self.animations[name] = []
-            else:
-                # Get the animation direction from the folder name
-                direction = root.split('/')[-1]  # Use / for Unix-style paths
+        # # 這裡可以載入玩家的圖片、音效等資源
+        # self.animations = {}
+        
+        # # Walk through the directory structure
+        # for index, (root, dirs, files) in enumerate(walk(path)):
+        #     if index == 0:
+        #         # First iteration - initialize animation lists for each direction
+        #         for name in dirs:
+        #             self.animations[name] = []
+        #     else:
+        #         # Get the animation direction from the folder name
+        #         direction = root.split('/')[-1]  # Use / for Unix-style paths
                 
-                # Sort files numerically and load each frame
-                for filename in sorted(files, key=lambda string: int(string.split('.')[0])):
-                    file_path = f"{root}/{filename}"  # Use / for Unix-style paths
-                    surface = pygame.image.load(file_path).convert_alpha()
-                    self.animations[direction].append(surface)
+        #         # Sort files numerically and load each frame
+        #         for filename in sorted(files, key=lambda string: int(string.split('.')[0])):
+        #             file_path = f"{root}/{filename}"  # Use / for Unix-style paths
+        #             surface = pygame.image.load(file_path).convert_alpha()
+        #             self.animations[direction].append(surface)
