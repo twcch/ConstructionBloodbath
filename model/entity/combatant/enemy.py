@@ -1,10 +1,10 @@
 import pygame
 from pygame.math import Vector2 as vector
 
-from model.entity.entity import Entity
+from model.entity.combatant.base import Combatant
 
 
-class Enemy(Entity):
+class Enemy(Combatant):
     def __init__(self, position, path, groups, shoot, player, collision_sprites):
         super().__init__(position, path, groups, shoot)
         self.player = player  # 玩家物件

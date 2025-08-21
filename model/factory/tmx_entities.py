@@ -1,8 +1,8 @@
 import pygame
 
 from configs.settings import LAYERS
-from model.entity.enemy import Enemy
-from model.entity.player import Player
+from model.entity.combatant.enemy import Enemy
+from model.entity.combatant.player import Player
 from model.entity.tile import Tile, CollisionTile, MovingPlatform
 from model.service.assets import AssetManager
 

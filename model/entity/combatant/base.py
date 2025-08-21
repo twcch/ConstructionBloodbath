@@ -7,7 +7,7 @@ from pygame.math import Vector2 as vector
 from configs.settings import *
 
 
-class Entity(pygame.sprite.Sprite):
+class Combatant(pygame.sprite.Sprite):
     def __init__(self, position, path, groups, shoot):
         super().__init__(groups)
 

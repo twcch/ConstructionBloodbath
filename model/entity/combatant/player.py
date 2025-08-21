@@ -3,10 +3,10 @@ import sys
 import pygame
 from pygame.math import Vector2 as vector
 
-from model.entity.entity import Entity
+from model.entity.combatant.base import Combatant
 
 
-class Player(Entity):
+class Player(Combatant):
     def __init__(self, position, groups, path, collision_sprites, shoot):
         super().__init__(position, path, groups, shoot)  # Sprite 的建構子就會自動幫你把自己加入到這些 Group 裡
 
