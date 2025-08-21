@@ -47,10 +47,12 @@ Project Structure
 Development Team
 This project is developed by students of National Cheng Kung University as part of the "Python Programming and Interactive Game Design" course.
 
-License
+## License
+
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-Acknowledgements
-Special thanks to the course instructors and teaching assistants
+## Acknowledgements
+
+Special thanks to the course instructors and teaching assistants 
 Inspired by classic games like Contra and Metal Slug
 All assets used are either original creations or properly licensed
