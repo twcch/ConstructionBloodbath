@@ -74,6 +74,11 @@ class Game:  # game
         # bullet images
         self.bullet_surf = pygame.image.load('assets/graphics/bullet.png').convert_alpha()
         self.fire_surfs = [pygame.image.load(f'assets/graphics/fire/{i}.png').convert_alpha() for i in range(1, 2)]
+        
+        # music
+        self.music = pygame.mixer.Sound('assets/audio/music.wav')
+        self.music.play(loops=-1)  # 循環播放音樂
+        self.music.set_volume(0.5)  # 設置音量
 
     def setup(self):
         tmx_map = load_pygame('assets/data/map.tmx')

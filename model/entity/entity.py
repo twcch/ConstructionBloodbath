@@ -38,6 +38,12 @@ class Entity(pygame.sprite.Sprite):
         self.is_vulnerable = True
         self.hit_time = None  # 用來記錄被擊中的時間
         self.invul_duration = 500
+        
+        # audio
+        self.hit_sound = pygame.mixer.Sound('assets/audio/hit.wav')
+        self.hit_sound.set_volume(0.2)  # 設置音量
+        self.shoot_sound = pygame.mixer.Sound('assets/audio/bullet.wav')
+        self.shoot_sound.set_volume(0.2)  # 設置音量
     
     def blink(self):
         if not self.is_vulnerable:
@@ -60,6 +66,7 @@ class Entity(pygame.sprite.Sprite):
             self.health -= 1
             self.is_vulnerable = False
             self.hit_time = pygame.time.get_ticks()
+            self.hit_sound.play()  # 播放受傷音效
         
     def check_death(self):
         if self.health <= 0:

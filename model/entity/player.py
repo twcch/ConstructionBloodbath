@@ -43,22 +43,6 @@ class Player(Entity):
                 if hasattr(sprite, 'direction'):
                     self.moving_floor = sprite
         
-        # # github copilot ------
-        # # 創建一個略大的底部矩形以確保重疊
-        # bottom_rect = pygame.Rect(0, 0, self.rect.width * 0.8, 5)
-        # bottom_rect.midtop = self.rect.midbottom
-        
-        # for sprite in self.collision_sprites.sprites():
-        #     if sprite.rect.colliderect(bottom_rect):
-        #         if isinstance(sprite, MovingPlatform):
-        #             self.moving_floor = sprite
-        #             if self.rect.bottom > sprite.rect.top:
-        #                 self.rect.bottom = sprite.rect.top
-        #                 self.position.y = self.rect.y
-        #                 self.direction.y = 0
-        #             self.on_floor = True
-        # # github copilot ------
-
     # get the player input (all arrow keys: left, right, up, down)
     def input(self):
         keys = pygame.key.get_pressed()
@@ -88,6 +72,7 @@ class Player(Entity):
             
             self.can_shoot = False
             self.shoot_time = pygame.time.get_ticks()  # 記錄射擊時間
+            self.shoot_sound.play()  # 播放射擊音效
         
 
     def collision(self, direction):
