@@ -10,6 +10,10 @@ from model.entity.tile import Tile, CollisionTile, MovingPlatform
 from model.entity.bullet import Bullet, FireAnimation
 from model.entity.enemy import Enemy
 from model.entity.overlay import Overlay
+from model.entity.bullet import Bullet, FireAnimation
+from model.entity.overlay import Overlay
+from model.service.assets import AssetManager
+from model.factory.tmx_entities import TMXEntityFactory
 
 # Camera, 控制玩家視角
 class AllSprites(pygame.sprite.Group):
@@ -58,6 +62,9 @@ class Game:  # game
         pygame.display.set_caption(TITLE)
 
         self.clock = pygame.time.Clock()
+        
+        # managers
+        self.assets = AssetManager()
 
         # Groups
         self.all_sprites = AllSprites()
@@ -72,62 +79,24 @@ class Game:  # game
         self.overlay = Overlay(self.player)
 
         # bullet images
-        self.bullet_surf = pygame.image.load('assets/graphics/bullet.png').convert_alpha()
-        self.fire_surfs = [pygame.image.load(f'assets/graphics/fire/{i}.png').convert_alpha() for i in range(1, 2)]
+        self.bullet_surf = self.assets.image('assets/graphics/bullet.png')
+        self.fire_surfs = [self.assets.image(f'assets/graphics/fire/{i}.png') for i in range(1, 2)]
         
         # music
-        self.music = pygame.mixer.Sound('assets/audio/music.wav')
-        self.music.play(loops=-1)  # 循環播放音樂
-        self.music.set_volume(0.5)  # 設置音量
+        self.music = self.assets.sound('assets/audio/music.wav')
+        self.music.play(loops=-1)
+        self.music.set_volume(0.5)
 
     def setup(self):
-        tmx_map = load_pygame('assets/data/map.tmx')
-        
-        # collision tiles
-        for x, y, surface in tmx_map.get_layer_by_name('Level').tiles():
-            # 我們要顯示地圖的其中一個區塊，不能夠直接傳 (x, y)，必須要放大顯示局部
-            # 有別於一般的寫法透過 all_sprites.add(object) 把物件加入群組，這是直接把群組傳入這個物件，由 Sprites() 將這個物件加入群組
-            CollisionTile(position=(x * 64, y * 64), surface=surface, groups=[self.all_sprites, self.collision_sprites])
-
-        # tiles
-        # 4 mores layers we need to import: BG, BG Detail, FG Detail Bottom, FG Detail Top
-        for layer in ['BG', 'BG Detail', 'FG Detail Bottom', 'FG Detail Top']:
-            # 這些層的 tiles() 方法會返回每個 tile 的位置和表面
-            # 這裡假設每個 tile 的大小是 64x64 像素
-            for x, y, surface in tmx_map.get_layer_by_name(layer).tiles():
-                # 背景層
-                Tile(position=(x * 64, y * 64), surface=surface, groups=self.all_sprites, z=LAYERS[layer])
-        
-        # objects
-        # 從地圖檔 (TMX) 動態生成遊戲物件 (Entities)
-        for obj in tmx_map.get_layer_by_name('Entities'):
-            if obj.name == 'Player':
-                # Player 初始位置是 TMX 中的 obj.x, obj.y (裡的 object layer 裡每個物件會有座標)
-                # 生成 Player 物件，並加入到 all_sprites 群組，obj.x, obj.y 是 tile 的左上角座標
-                self.player = Player(
-                    position=(obj.x, obj.y), 
-                    groups=[self.all_sprites, self.vulnerable_sprites], 
-                    path='assets/graphics/player', 
-                    collision_sprites=self.collision_sprites, 
-                    shoot=self.shoot
-                    )
-            elif obj.name == 'Enemy':
-                Enemy(
-                    position=(obj.x, obj.y), 
-                    path='assets/graphics/enemy', 
-                    groups=[self.all_sprites, self.vulnerable_sprites], 
-                    shoot=self.shoot, 
-                    player=self.player, 
-                    collision_sprites=self.collision_sprites
-                    )
-
-        self.platform_border_rects = []
-        for obj in tmx_map.get_layer_by_name('Platforms'):
-            if obj.name == 'Platform':
-                MovingPlatform(position=(obj.x, obj.y), surface=obj.image, groups=[self.all_sprites, self.collision_sprites, self.platform_sprites])
-            else:
-                border_rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                self.platform_border_rects.append(border_rect)
+        factory = TMXEntityFactory(
+            assets=self.assets,
+            all_sprites=self.all_sprites,
+            collision_sprites=self.collision_sprites,
+            platform_sprites=self.platform_sprites,
+            vulnerable_sprites=self.vulnerable_sprites,
+            shoot_cb=self.shoot
+        )
+        self.player, self.platform_border_rects = factory.build_world('assets/data/map.tmx')
 
     def platform_collisions(self):
         for platform in self.platform_sprites.sprites():
