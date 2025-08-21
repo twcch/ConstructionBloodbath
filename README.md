@@ -76,17 +76,12 @@ Adopt a configuration‑first workflow: tune values in config, keep constants ou
 ## Run and Debug
 
 - Run from terminal:
+
 ```sh
 python app.py
 ```
+
 - In VS Code: open the workspace, run [app.py](app.py) with the built‑in debugger (recommended). Use the integrated terminal and Output pane for logs.
-
-## Gameplay and Controls
-
-- Arrow Keys: Move/Jump
-- Space: Shoot
-
-Game flow: Main Menu → Stage progression (enemies → power‑ups → Boss) → Results.
 
 ## Assets and Maps
 
@@ -115,20 +110,6 @@ ConstructionBloodbath/
       ├─ Subway_tiles_x4.tsx
       └─ wall_subway.tsx
 ```
-
-## Quality and Tooling
-
-- Code style: PEP 8, type hints encouraged for domain services/entities
-- Formatting/Linting: integrate Black/Flake8/Mypy as needed
-- Coverage: Python coverage supported (see IDE config traces in project settings)
-
-## Roadmap
-
-- Expand enemy behaviors and boss patterns (see docs)
-- Implement full weapon level/decay system per spec
-- Add save/load and scoring
-- Introduce CI workflow (lint, type check, smoke test)
-- Packaging and distribution (itch.io/Steam‑ready build scripts)
 
 ## Contributing
 
