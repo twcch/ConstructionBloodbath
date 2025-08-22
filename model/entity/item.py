@@ -17,6 +17,7 @@ class HealItem(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=position)
         self.z = LAYERS['Level']
         self.heal_amount = heal_amount
+        self.image_path = path  # 用於辨識道具種類
 
         # 下落物理
         self._vel_y = 0.0

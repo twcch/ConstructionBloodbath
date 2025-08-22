@@ -4,6 +4,7 @@ import pygame
 from pygame.math import Vector2 as vector
 
 from model.entity.combatant.base import Combatant
+from configs.settings import HEAL_ITEM_CLAM_SOUP_IMG
 
 
 class Player(Combatant):
@@ -161,8 +162,11 @@ class Player(Combatant):
             hits = pygame.sprite.spritecollide(self, self.item_sprites, dokill=True)
             for item in hits:
                 heal = getattr(item, 'heal_amount', 1)
-                # 基本上限 10
-                self.health = min(self.health + heal, 10)
+                # 若為蛤蜊湯且當前 hp <5 則直接死亡
+                if getattr(item, 'image_path', None) == HEAL_ITEM_CLAM_SOUP_IMG and self.health < 5:
+                    self.health = 0
+                else:
+                    self.health = max(0, min(self.health + heal, 10))
 
         # github copilot ------
         # 保存上一幀的平台引用
