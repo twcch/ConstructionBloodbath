@@ -10,7 +10,7 @@ from pathlib import Path
 # ---- 基本視窗設定 ----
 FPS = 60
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
-TITLE = '工地血戰'
+TITLE = '工   地   血   戰'
 
 # ---- 專案根目錄與資源資料夾 ----
 BASE_DIR = Path(__file__).resolve().parent.parent  # 專案根 (configs/ 的上層)

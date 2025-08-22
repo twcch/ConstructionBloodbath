@@ -24,9 +24,10 @@ class MenuScene:
         else:
             surface.fill(MENU_BG_COLOR)
         title_surf = self.app.fonts.title.render(TITLE, True, MENU_TITLE_COLOR)
-        # ----
+        title_surf_2 = self.app.fonts.text.render('- 台南洛聖都 -', True, MENU_TEXT_COLOR)
         tip_surf = self.app.fonts.text.render('Press ENTER / SPACE to Start  |  ESC to Quit', True, MENU_TEXT_COLOR)
         surface.blit(title_surf, title_surf.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - 60)))
+        surface.blit(title_surf_2, title_surf_2.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - 20)))
         surface.blit(tip_surf, tip_surf.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 40)))
 
     def update(self, dt: float):
