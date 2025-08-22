@@ -5,7 +5,11 @@ from configs.settings import *
 class Overlay:
     def __init__(self, player):
         self.player = player
-        self.font = pygame.font.Font(None, 32)
+    # 統一字型: 使用 settings.FONT_DEFAULT (若載入失敗 fallback None)
+        try:
+            self.font = pygame.font.Font(FONT_DEFAULT, 32)
+        except Exception:
+            self.font = pygame.font.Font(None, 32)
         self.display_surface = pygame.display.get_surface()
         # 延後載入 health_surface：若 display 尚未初始化，使用暫時 surface
         try:

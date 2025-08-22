@@ -43,7 +43,12 @@ LEVEL_MAPS = {
 
 # ---- 字型 ----
 FONT_CUBIC = str(FONT_DIR / 'Cubic-11-main' / 'Cubic-11.ttf')
-FONT_BOUTIQUE = str(FONT_DIR / 'BoutiqueBitmap9x9_Bold_1.9.ttf')
+FONT_BOUTIQUE = str(FONT_DIR / '微軟正黑體-1.ttf')
+"""字型統一設定: 所有遊戲 UI / 文字統一指向這個路徑。
+若要更換只需修改 FONT_DEFAULT = 某字型常數。
+可用的候選: FONT_CUBIC, FONT_BOUTIQUE 或自行新增放入 assets/font/ 下。
+"""
+FONT_DEFAULT = FONT_BOUTIQUE  # ← 修改這裡即可全域換字型
 
 # ---- 其他可擴充的載入輔助 (保留給未來需要) ----
 def asset_path(*parts: str) -> str:

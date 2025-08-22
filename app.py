@@ -93,10 +93,9 @@ class Game:  # game
         self.music.play(loops=-1)
         self.music.set_volume(MUSIC_VOLUME)
 
-        # fonts
-        cubic_font_path = FONT_CUBIC
+        # fonts (統一使用 FONT_DEFAULT)
         def load_font(path, size):
-            if not os.path.exists(path):
+            if not path or not os.path.exists(path):
                 print(f'[Font] Not found: {path} -> fallback default')
                 return pygame.font.Font(None, size)
             try:
@@ -104,11 +103,12 @@ class Game:  # game
             except Exception as e:
                 print(f'[Font] Fail load {path}: {e}')
                 return pygame.font.Font(None, size)
-        self.title_font = load_font(cubic_font_path, 72)
-        self.text_font = load_font(cubic_font_path, 32)
-        self.level_font = load_font(cubic_font_path, 96)
-        self.credits_font_title = load_font(cubic_font_path, 72)
-        self.credits_font_line = load_font(cubic_font_path, 32)
+        font_path = FONT_DEFAULT
+        self.title_font = load_font(font_path, 72)
+        self.text_font = load_font(font_path, 32)
+        self.level_font = load_font(font_path, 96)
+        self.credits_font_title = load_font(font_path, 72)
+        self.credits_font_line = load_font(font_path, 32)
         try:
             _test = self.title_font.render('測試中文 Test', True, (255,255,255))
             print(f'[Font] Chinese render size: {_test.get_size()}')
