@@ -4,6 +4,7 @@ import random
 
 from model.entity.combatant.base import Combatant
 from model.entity.item import HealItem
+from configs.settings import HEAL_ITEM_IMG, HEAL_ITEM_BIG_IMG
 
 
 class Enemy(Combatant):
@@ -44,18 +45,24 @@ class Enemy(Combatant):
             # 記錄玩家擊殺
             if hasattr(self, 'player') and hasattr(self.player, 'kill_count'):
                 self.player.kill_count += 1
-            # 50% 掉落補血道具
-            if (
-                hasattr(self.player, 'item_sprites') and
-                hasattr(self.player, 'all_sprites') and
-                random.random() < 0.5
-            ):
-                HealItem(
-                    self.rect.center,
-                    self.player.all_sprites,
-                    self.player.item_sprites,
-                    collision_sprites=self.collision_sprites
-                )
+            # 50% 掉落 (小補或大補 二擇一)
+            if hasattr(self.player, 'item_sprites') and hasattr(self.player, 'all_sprites'):
+                if random.random() < 0.5:
+                    # 再次 50/50 選擇圖像與數值
+                    if random.random() < 0.5:
+                        heal_amount = 1
+                        path = HEAL_ITEM_IMG
+                    else:
+                        heal_amount = 2
+                        path = HEAL_ITEM_BIG_IMG
+                    HealItem(
+                        self.rect.center,
+                        self.player.all_sprites,
+                        self.player.item_sprites,
+                        collision_sprites=self.collision_sprites,
+                        heal_amount=heal_amount,
+                        image_path=path
+                    )
             self.kill()
 
     def update(self, dt):

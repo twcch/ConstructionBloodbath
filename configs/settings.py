@@ -34,6 +34,7 @@ HEALTH_IMG = str(GFX_DIR / 'health.png')
 MUSIC_FILE = str(AUDIO_DIR / 'music.wav')
 MAIN_MAP = str(DATA_DIR / 'map.tmx')
 HEAL_ITEM_IMG = str(GFX_DIR / 'objects' / '台灣啤酒.png')  # 補血道具圖片
+HEAL_ITEM_BIG_IMG = str(GFX_DIR / 'objects' / '台灣啤酒大.png')  # 大補血道具圖片
 
 # ---- 關卡地圖 (如後續擴充直接修改此 dict) ----
 LEVEL_MAPS = {

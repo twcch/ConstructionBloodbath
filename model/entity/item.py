@@ -5,10 +5,11 @@ from configs.settings import HEAL_ITEM_IMG, LAYERS
 class HealItem(pygame.sprite.Sprite):
     """簡單的補血道具，玩家碰到即 +1 HP，下落至地面停止。"""
 
-    def __init__(self, position, *groups, heal_amount: int = 1, collision_sprites: pygame.sprite.Group | None = None):
+    def __init__(self, position, *groups, heal_amount: int = 1, collision_sprites: pygame.sprite.Group | None = None, image_path: str | None = None):
         super().__init__(*groups)
+        path = image_path or HEAL_ITEM_IMG
         try:
-            self.image = pygame.image.load(HEAL_ITEM_IMG).convert_alpha()
+            self.image = pygame.image.load(path).convert_alpha()
         except Exception:
             # 後備方塊
             self.image = pygame.Surface((32, 48))
