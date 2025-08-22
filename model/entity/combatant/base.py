@@ -37,7 +37,7 @@ class Combatant(pygame.sprite.Sprite):
         self.duck = False  # 是否蹲下
 
         # health
-        self.health = 3  # 初始生命值
+        self.health = 2  # 初始生命值
         self.is_vulnerable = True
         self.hit_time = None  # 用來記錄被擊中的時間
         self.invul_duration = 500

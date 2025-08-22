@@ -63,6 +63,19 @@ class Game:  # game
         self.platform_border_rects = []
         self.overlay = None
         
+        # 關卡與門檻設定
+        self.level = 1
+        self.level_maps = {
+            1: 'assets/data/map.tmx',
+            2: 'assets/data/map.tmx',   # 請自行新增對應 TMX 檔
+            3: 'assets/data/map.tmx'
+        }
+        # 從該關欲前進到下一關所需的總累積殺敵數
+        self.level_thresholds = {
+            1: 17,   # 累積 16 殺 → 進入第 2 關
+            2: 34    # 累積 32 殺 → 進入第 3 關
+        }
+        
         # managers
         self.assets = AssetManager()
         # 先載入 TMX 供 AllSprites 計算 sky_num
@@ -90,9 +103,15 @@ class Game:  # game
         # Menu 字型/內容
         self.title_font = pygame.font.SysFont('arial', 72, bold=True)
         self.text_font = pygame.font.SysFont('arial', 32)
-        self._menu_ready = False  # 若需要之後加載特效可用
-        
-        self._menu_ready = False  # 若需要之後加載特效可用
+        self._menu_ready = False
+        self._menu_ready = False
+        try:
+            raw = self.assets.image(MENU_BG_IMAGE)
+            self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        except Exception:
+            self.menu_bg = None
+        pygame.font.init()
+        self.ui_font = pygame.font.Font(None, 32)
 
         # 選單背景圖（若圖尺寸不同，可依需求縮放）
         try:
@@ -101,9 +120,26 @@ class Game:  # game
             self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
         except Exception:
             self.menu_bg = None  # 找不到就 fallback 填色
+        
+        pygame.font.init()
+        self.ui_font = pygame.font.Font(None, 32)  # 可換成自訂字型檔
+        
+        # --- 新增：關卡提示文字相關 ---
+        self.level_announce_duration = 2.0
+        self.level_announce_timer = 0.0
+        self.level_font = pygame.font.SysFont('arial', 96, bold=True)
+
+    def draw_kill_count(self, surface):
+        if not self.player:
+            return
+        text_surf = self.ui_font.render(f'Level: {self.level}  Kills: {self.player.kill_count}', True, (255, 255, 255))
+        bg = pygame.Surface((text_surf.get_width() + 12, text_surf.get_height() + 8), pygame.SRCALPHA)
+        bg.fill((0, 0, 0, 120))
+        surface.blit(bg, (8, 8))
+        surface.blit(text_surf, (14, 12))
 
     def setup(self):
-        # 進入遊戲時才真正建立世界
+        # 只建立當前關卡（第 1 關 start_game 時呼叫）
         factory = TMXEntityFactory(
             assets=self.assets,
             all_sprites=self.all_sprites,
@@ -117,8 +153,12 @@ class Game:  # game
 
     def start_game(self):
         if self.state != 'game':
+            self.level = 1
+            self._map_path = self.level_maps[self.level]
             self.setup()
             self.state = 'game'
+            # 新增：啟動關卡顯示
+            self.level_announce_timer = self.level_announce_duration
 
     def platform_collisions(self):
         for platform in self.platform_sprites.sprites():
@@ -149,6 +189,53 @@ class Game:  # game
             for target in targets:
                 target.damage()
 
+    def check_level_progression(self):
+        """檢查是否達成進入下一關的條件"""
+        if not self.player:
+            return
+        if self.level in self.level_thresholds:
+            need = self.level_thresholds[self.level]
+            if self.player.kill_count >= need:
+                next_level = self.level + 1
+                if next_level in self.level_maps:
+                    self.advance_level(next_level)
+    
+    def advance_level(self, next_level: int):
+        """進入下一關並重置場景 (保留累積殺敵數)"""
+        preserved_kills = self.player.kill_count if self.player else 0
+
+        # 讀取對應地圖，若不存在則 fallback 到第一關
+        map_path = self.level_maps.get(next_level, self.level_maps[1])
+        try:
+            tmx_map = self.assets.tmx(map_path)
+        except Exception:
+            tmx_map = self.assets.tmx(self.level_maps[1])
+            next_level = 1
+
+        # 重新建立主要群組（AllSprites 需依新地圖計算 sky_num）
+        self.all_sprites = AllSprites(self.assets, tmx_map)
+        self.collision_sprites = pygame.sprite.Group()
+        self.platform_sprites = pygame.sprite.Group()
+        self.bullet_sprites = pygame.sprite.Group()
+        self.vulnerable_sprites = pygame.sprite.Group()
+
+        # 建立世界
+        factory = TMXEntityFactory(
+            assets=self.assets,
+            all_sprites=self.all_sprites,
+            collision_sprites=self.collision_sprites,
+            platform_sprites=self.platform_sprites,
+            vulnerable_sprites=self.vulnerable_sprites,
+            shoot_cb=self.shoot
+        )
+        self.player, self.platform_border_rects = factory.build_world(map_path)
+        self.player.kill_count = preserved_kills  # 保留累積擊殺
+        self.overlay = Overlay(self.player)
+        self.level = next_level
+        
+        # 新增：切關時啟動顯示
+        self.level_announce_timer = self.level_announce_duration
+    
     def shoot(self, position: vector, direction: vector, entity: pygame.sprite.Sprite) -> None:
         Bullet(position=position, surface=self.bullet_surf, direction=direction,
                groups=[self.all_sprites, self.bullet_sprites])
@@ -175,6 +262,11 @@ class Game:  # game
         self.platform_collisions()
         self.all_sprites.update(dt)
         self.bullet_collisions()
+        self.check_level_progression()
+        
+        # 新增：遞減關卡顯示計時
+        if self.level_announce_timer > 0:
+            self.level_announce_timer -= dt
 
     def draw_menu(self):
         if self.menu_bg:
@@ -196,6 +288,29 @@ class Game:  # game
         self.display_surface.fill(BG_COLOR)
         self.all_sprites.render(self.player)  # 原 customer_draw 改為 render
         self.overlay.display()
+        
+        # 新增：顯示關卡文字（淡出）
+        if self.level_announce_timer > 0:
+            ratio = max(0, self.level_announce_timer / self.level_announce_duration)
+            alpha = int(255 * ratio)
+            text_surf = self.level_font.render(f'Level {self.level}', True, (255, 255, 255))
+            # 以半透明黑底襯托
+            padding = 40
+            box = pygame.Surface(
+                (text_surf.get_width() + padding, text_surf.get_height() + padding),
+                pygame.SRCALPHA
+            )
+            box.fill((0, 0, 0, int(160 * ratio)))
+            box_rect = box.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
+            text_rect = text_surf.get_rect(center=box_rect.center)
+
+            # 套用文字淡出（需複製後設定 alpha）
+            temp_text = text_surf.copy()
+            temp_text.set_alpha(alpha)
+
+            self.display_surface.blit(box, box_rect)
+            self.display_surface.blit(temp_text, text_rect)
+        
         pygame.display.update()
 
     def run(self) -> None:
@@ -206,6 +321,9 @@ class Game:  # game
             dt = self.clock.tick(FPS) / 1000
             self.update(dt)
             self.draw()
+            
+            self.draw_kill_count(self.display_surface)
+            pygame.display.update()
 
 
 if __name__ == '__main__':

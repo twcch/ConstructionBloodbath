@@ -15,11 +15,13 @@ class Player(Combatant):
 
         # vertical movement
         self.gravity = 15  # 重力加速度
-        self.jump_speed = 600  # 跳躍速度
+        self.jump_speed = 450  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
-        self.health = 10
+        self.health = 200
+        # 新增：擊殺計數
+        self.kill_count = 0
 
     def get_status(self):
         # idle
@@ -131,6 +133,9 @@ class Player(Combatant):
         self.rect.y = round(self.position.y)
         self.collision('vertical')
         self.moving_floor = None  # 重置移動平台接觸狀態
+
+    def add_kill(self):
+        self.kill_count += 1
 
     def check_death(self):
         if self.health <= 0:

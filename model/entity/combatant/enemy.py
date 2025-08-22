@@ -36,6 +36,14 @@ class Enemy(Combatant):
             self.can_shoot = False
             self.shoot_time = pygame.time.get_ticks()  # 記錄射擊時間
 
+    def check_death(self):
+        if self.health <= 0:
+            # 記錄玩家擊殺
+            if hasattr(self, 'player') and hasattr(self.player, 'kill_count'):
+                self.player.kill_count += 1
+                # 或呼叫 self.player.add_kill()
+            self.kill()
+
     def update(self, dt):
         self.get_status()
         self.animate(dt)  # 更新動畫
