@@ -1,6 +1,6 @@
 FPS = 60
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
-TITLE = 'Construction Bloodbath'
+TITLE = '工地血戰'
 
 LAYERS = {
     'BG': 0,

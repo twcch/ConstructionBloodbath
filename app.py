@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pygame
@@ -101,38 +102,57 @@ class Game:  # game
         self.music.play(loops=-1)
         self.music.set_volume(MUSIC_VOLUME)  # 使用設定常數
 
-        # Menu 字型/內容
-        self.title_font = pygame.font.SysFont('arial', 72, bold=True)
-        self.text_font = pygame.font.SysFont('arial', 32)
-        self._menu_ready = False
+        # --- 字型設定（改用 Font 而非 SysFont）---
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        fonts_dir = os.path.join(base_dir, 'assets', 'fonts')
+        cubic_font_path = os.path.join(base_dir, 'assets', 'font', 'Cubic-11-main', 'Cubic-11.ttf')
+
+        def load_font(path, size):
+            if not os.path.exists(path):
+                print(f'[Font] Not found: {path} -> fallback default')
+                return pygame.font.Font(None, size)
+            try:
+                return pygame.font.Font(path, size)
+            except Exception as e:
+                print(f'[Font] Fail load {path}: {e}')
+                return pygame.font.Font(None, size)
+
+        self.title_font = load_font(cubic_font_path, 72)
+        self.text_font = load_font(cubic_font_path, 32)
+        self.level_font = load_font(cubic_font_path, 96)
+        self.credits_font_title = load_font(cubic_font_path, 72)
+        self.credits_font_line = load_font(cubic_font_path, 32)
+
+        try:
+            _test = self.title_font.render('測試中文 Test', True, (255,255,255))
+            print(f'[Font] Chinese render size: {_test.get_size()}')
+        except Exception as e:
+            print(f'[Font] Render fail: {e}')
+
+        # Menu 背景
         self._menu_ready = False
         try:
             raw = self.assets.image(MENU_BG_IMAGE)
             self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
         except Exception:
             self.menu_bg = None
-        pygame.font.init()
-        self.ui_font = pygame.font.Font(None, 32)
 
-        # 選單背景圖（若圖尺寸不同，可依需求縮放）
-        try:
-            raw = self.assets.image(MENU_BG_IMAGE)
-            # 直接等比填滿視窗（簡單方式：強制縮放）
-            self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
-        except Exception:
-            self.menu_bg = None  # 找不到就 fallback 填色
-        
-        pygame.font.init()
-        self.ui_font = pygame.font.Font(None, 32)  # 可換成自訂字型檔
-        
-        # --- 新增：關卡提示文字相關 ---
+        # UI 用（可直接用同一中文字型，避免 None）
+        self.ui_font = self.text_font
+
+        # --- 新增：關卡提示文字相關 (若想保留像素英文字型可另外命名，否則省略) ---
+        # 原本 BoutiqueBitmap 不含中文，若仍要它，確保只用於英數。
+        # self.pixel_font = load_font(os.path.join(fonts_dir,'BoutiqueBitmap9x9_Bold_1.9.ttf'), 32)
+
         self.level_announce_duration = 2.0
         self.level_announce_timer = 0.0
-        self.level_font = pygame.font.SysFont('arial', 96, bold=True)
-        
+        # self.level_font = self.pixel_font  # 若需像素英字才打開
+
         # --- Credits （致謝畫面）---
-        self.credits_font_title = pygame.font.SysFont('arial', 72, bold=True)
-        self.credits_font_line = pygame.font.SysFont('arial', 32)
+        FONT_PATH = cubic_font_path  # 可改成其他字型路徑
+
+        # self.credits_font_title = pygame.font.SysFont(FONT_PATH, 72, bold=True)
+        # self.credits_font_line = pygame.font.SysFont(FONT_PATH, 32)
         self.credits_lines = [
             "THANK YOU FOR PLAYING",
             "感謝遊玩本遊戲！",
