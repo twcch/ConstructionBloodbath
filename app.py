@@ -73,7 +73,8 @@ class Game:  # game
         # 從該關欲前進到下一關所需的總累積殺敵數
         self.level_thresholds = {
             1: 17,   # 累積 16 殺 → 進入第 2 關
-            2: 34    # 累積 32 殺 → 進入第 3 關
+            2: 34,    # 累積 32 殺 → 進入第 3 關
+            3: 51   # 第 3 關達到門檻後進入致謝畫面（數值可調整）
         }
         
         # managers
@@ -128,6 +129,17 @@ class Game:  # game
         self.level_announce_duration = 2.0
         self.level_announce_timer = 0.0
         self.level_font = pygame.font.SysFont('arial', 96, bold=True)
+        
+        # --- Credits （致謝畫面）---
+        self.credits_font_title = pygame.font.SysFont('arial', 72, bold=True)
+        self.credits_font_line = pygame.font.SysFont('arial', 32)
+        self.credits_lines = [
+            "THANK YOU FOR PLAYING",
+            "感謝遊玩本遊戲！",
+            "程式 / 美術 / 音效: 你自己",
+            "特別感謝: 家人朋友支持",
+            "Press ANY KEY to return to Menu"
+        ]
 
     def draw_kill_count(self, surface):
         if not self.player:
@@ -152,6 +164,18 @@ class Game:  # game
         self.overlay = Overlay(self.player)
 
     def start_game(self):
+        if self.state != 'game':
+            self.level = 1
+            self._map_path = self.level_maps[self.level]
+
+            # 重新建立群組與攝影機（確保乾淨重開）
+            tmx_map = self.assets.tmx(self._map_path)
+            self.all_sprites = AllSprites(self.assets, tmx_map)
+            self.collision_sprites = pygame.sprite.Group()
+            self.platform_sprites = pygame.sprite.Group()
+            self.bullet_sprites = pygame.sprite.Group()
+            self.vulnerable_sprites = pygame.sprite.Group()
+            
         if self.state != 'game':
             self.level = 1
             self._map_path = self.level_maps[self.level]
@@ -199,6 +223,8 @@ class Game:  # game
                 next_level = self.level + 1
                 if next_level in self.level_maps:
                     self.advance_level(next_level)
+                else:
+                    self.enter_credits()
     
     def advance_level(self, next_level: int):
         """進入下一關並重置場景 (保留累積殺敵數)"""
@@ -241,6 +267,13 @@ class Game:  # game
                groups=[self.all_sprites, self.bullet_sprites])
         FireAnimation(entity=entity, surface_list=self.fire_surfs, direction=direction, groups=self.all_sprites)
 
+    def enter_credits(self):
+        self.state = 'credits'
+
+    def return_to_menu(self):
+        self.state = 'menu'
+        # 如需重新開始時歸零擊殺可在 start_game 時重設
+    
     def handle_events(self) -> bool:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -251,18 +284,32 @@ class Game:  # game
                         self.start_game()
                     if event.key == pygame.K_ESCAPE:
                         return False
+            elif self.state == 'credits':
+                if event.type == pygame.KEYDOWN:
+                    self.return_to_menu()
             else:
-                # 遊戲內若要擴充額外事件可放這裡
+                # 遊戲內事件
                 pass
         return True
 
     def update(self, dt: float) -> None:
         if self.state == 'menu':
-            return  # 選單不更新遊戲世界
+            return
+        if self.state == 'credits':
+            return  # 致謝畫面不更新遊戲世界
+        # ...existing code...
+        if self.level_announce_timer > 0:
+            self.level_announce_timer -= dt
+            
         self.platform_collisions()
         self.all_sprites.update(dt)
         self.bullet_collisions()
         self.check_level_progression()
+        
+        # 玩家死亡 → 回主選單
+        if self.player and (self.player.health <= 0 or not self.player.alive()):
+            self.return_to_menu()
+            self.player = None  # 清除引用，避免舊物件殘留
         
         # 新增：遞減關卡顯示計時
         if self.level_announce_timer > 0:
@@ -285,31 +332,41 @@ class Game:  # game
             self.draw_menu()
             pygame.display.update()
             return
+
+        if self.state == 'credits':
+            self.display_surface.fill((0, 0, 0))
+            # 標題
+            title_surf = self.credits_font_title.render(self.credits_lines[0], True, (255, 255, 255))
+            title_rect = title_surf.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT*0.25))
+            self.display_surface.blit(title_surf, title_rect)
+            # 其餘行
+            start_y = title_rect.bottom + 40
+            for i, line in enumerate(self.credits_lines[1:]):
+                surf = self.credits_font_line.render(line, True, (220, 220, 220))
+                rect = surf.get_rect(center=(WINDOW_WIDTH/2, start_y + i * 50))
+                self.display_surface.blit(surf, rect)
+            pygame.display.update()
+            return
+
+        # 遊戲畫面
         self.display_surface.fill(BG_COLOR)
-        self.all_sprites.render(self.player)  # 原 customer_draw 改為 render
+        self.all_sprites.render(self.player)
         self.overlay.display()
-        
-        # 新增：顯示關卡文字（淡出）
         if self.level_announce_timer > 0:
             ratio = max(0, self.level_announce_timer / self.level_announce_duration)
             alpha = int(255 * ratio)
             text_surf = self.level_font.render(f'Level {self.level}', True, (255, 255, 255))
-            # 以半透明黑底襯托
             padding = 40
-            box = pygame.Surface(
-                (text_surf.get_width() + padding, text_surf.get_height() + padding),
-                pygame.SRCALPHA
-            )
+            box = pygame.Surface((text_surf.get_width() + padding, text_surf.get_height() + padding), pygame.SRCALPHA)
             box.fill((0, 0, 0, int(160 * ratio)))
             box_rect = box.get_rect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
             text_rect = text_surf.get_rect(center=box_rect.center)
-
-            # 套用文字淡出（需複製後設定 alpha）
             temp_text = text_surf.copy()
             temp_text.set_alpha(alpha)
-
             self.display_surface.blit(box, box_rect)
             self.display_surface.blit(temp_text, text_rect)
+        self.draw_kill_count(self.display_surface)
+        pygame.display.update()
         
         pygame.display.update()
 

@@ -15,11 +15,12 @@ class Player(Combatant):
 
         # vertical movement
         self.gravity = 15  # 重力加速度
-        self.jump_speed = 450  # 跳躍速度
+        self.jump_speed = 400  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
-        self.health = 200
+        self.health = 3
+        self.is_dead = False
         # 新增：擊殺計數
         self.kill_count = 0
 
@@ -138,9 +139,9 @@ class Player(Combatant):
         self.kill_count += 1
 
     def check_death(self):
-        if self.health <= 0:
-            pygame.quit()
-            sys.exit()
+        if self.health <= 0 and not self.is_dead:
+            self.is_dead = True
+            self.kill()  # 只移除自己，不結束遊戲
 
     def update(self, dt):
         self.old_rect = self.rect.copy()
