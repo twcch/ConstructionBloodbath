@@ -15,11 +15,11 @@ class Player(Combatant):
 
         # vertical movement
         self.gravity = 15  # 重力加速度
-        self.jump_speed = 400  # 跳躍速度
+        self.jump_speed = 350  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
-        self.health = 3
+        self.health = 10
         self.is_dead = False
         # 新增：擊殺計數
         self.kill_count = 0
