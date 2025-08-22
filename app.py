@@ -56,6 +56,13 @@ class Game:  # game
         self.display_surface = pygame.display.set_mode(size=(WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
+        
+        # 狀態（新增）
+        self.state = 'menu'
+        self.player = None
+        self.platform_border_rects = []
+        self.overlay = None
+        
         # managers
         self.assets = AssetManager()
         # 先載入 TMX 供 AllSprites 計算 sky_num
@@ -67,8 +74,6 @@ class Game:  # game
         self.platform_sprites = pygame.sprite.Group()
         self.bullet_sprites = pygame.sprite.Group()
         self.vulnerable_sprites = pygame.sprite.Group()
-
-        self.setup()
 
         # overlay
         self.overlay = Overlay(self.player)
@@ -82,7 +87,23 @@ class Game:  # game
         self.music.play(loops=-1)
         self.music.set_volume(MUSIC_VOLUME)  # 使用設定常數
 
+        # Menu 字型/內容
+        self.title_font = pygame.font.SysFont('arial', 72, bold=True)
+        self.text_font = pygame.font.SysFont('arial', 32)
+        self._menu_ready = False  # 若需要之後加載特效可用
+        
+        self._menu_ready = False  # 若需要之後加載特效可用
+
+        # 選單背景圖（若圖尺寸不同，可依需求縮放）
+        try:
+            raw = self.assets.image(MENU_BG_IMAGE)
+            # 直接等比填滿視窗（簡單方式：強制縮放）
+            self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
+        except Exception:
+            self.menu_bg = None  # 找不到就 fallback 填色
+
     def setup(self):
+        # 進入遊戲時才真正建立世界
         factory = TMXEntityFactory(
             assets=self.assets,
             all_sprites=self.all_sprites,
@@ -91,7 +112,13 @@ class Game:  # game
             vulnerable_sprites=self.vulnerable_sprites,
             shoot_cb=self.shoot
         )
-        self.player, self.platform_border_rects = factory.build_world('assets/data/map.tmx')
+        self.player, self.platform_border_rects = factory.build_world(self._map_path)
+        self.overlay = Overlay(self.player)
+
+    def start_game(self):
+        if self.state != 'game':
+            self.setup()
+            self.state = 'game'
 
     def platform_collisions(self):
         for platform in self.platform_sprites.sprites():
@@ -131,14 +158,41 @@ class Game:  # game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
+            if self.state == 'menu':
+                if event.type == pygame.KEYDOWN:
+                    if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                        self.start_game()
+                    if event.key == pygame.K_ESCAPE:
+                        return False
+            else:
+                # 遊戲內若要擴充額外事件可放這裡
+                pass
         return True
 
     def update(self, dt: float) -> None:
+        if self.state == 'menu':
+            return  # 選單不更新遊戲世界
         self.platform_collisions()
         self.all_sprites.update(dt)
         self.bullet_collisions()
 
+    def draw_menu(self):
+        if self.menu_bg:
+            self.display_surface.blit(self.menu_bg, (0, 0))
+        else:
+            self.display_surface.fill(MENU_BG_COLOR)
+        title_surf = self.title_font.render(TITLE, True, MENU_TITLE_COLOR)
+        tip_surf = self.text_font.render('Press ENTER / SPACE to Start  |  ESC to Quit', True, MENU_TEXT_COLOR)
+        rect_title = title_surf.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - 60))
+        rect_tip = tip_surf.get_rect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 + 40))
+        self.display_surface.blit(title_surf, rect_title)
+        self.display_surface.blit(tip_surf, rect_tip)
+
     def draw(self) -> None:
+        if self.state == 'menu':
+            self.draw_menu()
+            pygame.display.update()
+            return
         self.display_surface.fill(BG_COLOR)
         self.all_sprites.render(self.player)  # 原 customer_draw 改為 render
         self.overlay.display()

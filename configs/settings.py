@@ -23,3 +23,9 @@ Z_LAYERS = {
 #BG_COLOR = (35, 20, 50)
 BG_COLOR = (0, 0, 0)  # Black background
 MUSIC_VOLUME = 0.5
+
+# --- Menu colors ---
+MENU_BG_COLOR = (10, 10, 10)
+MENU_TITLE_COLOR = (255, 255, 255)
+MENU_TEXT_COLOR = (200, 200, 200)
+MENU_BG_IMAGE = 'assets/graphics/sky/fg_sky.png'
