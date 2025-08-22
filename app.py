@@ -11,8 +11,8 @@ from model.factory.tmx_entities import TMXEntityFactory
 from model.service.assets import AssetManager
 
 
-# Camera, 控制玩家視角
 class AllSprites(pygame.sprite.Group):
+    """相機與所有可繪製 sprite 的群組"""
     def __init__(self, assets, tmx_map):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
@@ -20,11 +20,11 @@ class AllSprites(pygame.sprite.Group):
         self.half_w = WINDOW_WIDTH / 2
         self.half_h = WINDOW_HEIGHT / 2
 
-        # sky via AssetManager
-        self.fg_sky = assets.image('assets/graphics/sky/fg_sky.png')
-        self.bg_sky = assets.image('assets/graphics/sky/bg_sky.png')
+        # 天空圖層
+        self.fg_sky = assets.image(SKY_FG)
+        self.bg_sky = assets.image(SKY_BG)
 
-        # dimensions
+        # 根據地圖寬度計算天空重複次數
         self.padding = self.half_w
         self.sky_width = self.bg_sky.get_width()
         map_width = tmx_map.tilewidth * tmx_map.width + (2 * self.padding)
@@ -32,19 +32,17 @@ class AllSprites(pygame.sprite.Group):
 
     def _render_background(self):
         for x in range(self.sky_num):
-            x_position = -self.padding + (x * self.sky_width)
-            # 可將 2.5 與 850 移到 settings 做成常數
-            self.display_surface.blit(self.bg_sky, (x_position - self.offset.x / 2.5, 850 - self.offset.y / 2.5))
-            self.display_surface.blit(self.fg_sky, (x_position - self.offset.x / 2, 850 - self.offset.y / 2))
+            x_pos = -self.padding + (x * self.sky_width)
+            self.display_surface.blit(self.bg_sky, (x_pos - self.offset.x / 2.5, 850 - self.offset.y / 2.5))
+            self.display_surface.blit(self.fg_sky, (x_pos - self.offset.x / 2, 850 - self.offset.y / 2))
 
     def _render_sprites(self):
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
+        for sprite in sorted(self.sprites(), key=lambda spr: spr.z):
             offset_rect = sprite.image.get_rect(center=sprite.rect.center)
             offset_rect.center -= self.offset
             self.display_surface.blit(sprite.image, offset_rect)
 
     def render(self, player) -> None:
-        # 計算相機偏移量
         self.offset.x = player.rect.centerx - self.half_w
         self.offset.y = player.rect.centery - self.half_h
         self._render_background()
@@ -66,24 +64,19 @@ class Game:  # game
         
         # 關卡與門檻設定
         self.level = 1
-        self.level_maps = {
-            1: 'assets/data/map.tmx',
-            2: 'assets/data/map.tmx',   # 請自行新增對應 TMX 檔
-            3: 'assets/data/map.tmx'
-        }
-        # 從該關欲前進到下一關所需的總累積殺敵數
+        self.level_maps = LEVEL_MAPS
         self.level_thresholds = {
-            1: 17,   # 累積 16 殺 → 進入第 2 關
-            2: 34,    # 累積 32 殺 → 進入第 3 關
-            3: 51   # 第 3 關達到門檻後進入致謝畫面（數值可調整）
+            1: 17,
+            2: 34,
+            3: 51
         }
-        
-        # managers
+
+        # managers & map
         self.assets = AssetManager()
-        # 先載入 TMX 供 AllSprites 計算 sky_num
-        self._map_path = 'assets/data/map.tmx'
+        self._map_path = MAIN_MAP
         tmx_map = self.assets.tmx(self._map_path)
-        # Groups
+
+        # groups
         self.all_sprites = AllSprites(self.assets, tmx_map)
         self.collision_sprites = pygame.sprite.Group()
         self.platform_sprites = pygame.sprite.Group()
@@ -93,20 +86,15 @@ class Game:  # game
         # overlay
         self.overlay = Overlay(self.player)
 
-        # bullet images
-        self.bullet_surf = self.assets.image('assets/graphics/bullet.png')
-        self.fire_surfs = [self.assets.image(f'assets/graphics/fire/{i}.png') for i in range(1, 2)]
-
-        # music
-        self.music = self.assets.sound('assets/audio/music.wav')
+        # assets (images / sounds)
+        self.bullet_surf = self.assets.image(BULLET_IMG)
+        self.fire_surfs = [self.assets.image(asset_path('graphics', 'fire', f'{i}.png')) for i in range(1, 2)]
+        self.music = self.assets.sound(MUSIC_FILE)
         self.music.play(loops=-1)
-        self.music.set_volume(MUSIC_VOLUME)  # 使用設定常數
+        self.music.set_volume(MUSIC_VOLUME)
 
-        # --- 字型設定（改用 Font 而非 SysFont）---
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        fonts_dir = os.path.join(base_dir, 'assets', 'fonts')
-        cubic_font_path = os.path.join(base_dir, 'assets', 'font', 'Cubic-11-main', 'Cubic-11.ttf')
-
+        # fonts
+        cubic_font_path = FONT_CUBIC
         def load_font(path, size):
             if not os.path.exists(path):
                 print(f'[Font] Not found: {path} -> fallback default')
@@ -116,43 +104,31 @@ class Game:  # game
             except Exception as e:
                 print(f'[Font] Fail load {path}: {e}')
                 return pygame.font.Font(None, size)
-
         self.title_font = load_font(cubic_font_path, 72)
         self.text_font = load_font(cubic_font_path, 32)
         self.level_font = load_font(cubic_font_path, 96)
         self.credits_font_title = load_font(cubic_font_path, 72)
         self.credits_font_line = load_font(cubic_font_path, 32)
-
         try:
             _test = self.title_font.render('測試中文 Test', True, (255,255,255))
             print(f'[Font] Chinese render size: {_test.get_size()}')
         except Exception as e:
             print(f'[Font] Render fail: {e}')
 
-        # Menu 背景
+        # menu bg
         self._menu_ready = False
         try:
             raw = self.assets.image(MENU_BG_IMAGE)
             self.menu_bg = pygame.transform.scale(raw, (WINDOW_WIDTH, WINDOW_HEIGHT))
         except Exception:
             self.menu_bg = None
-
-        # UI 用（可直接用同一中文字型，避免 None）
         self.ui_font = self.text_font
 
-        # --- 新增：關卡提示文字相關 (若想保留像素英文字型可另外命名，否則省略) ---
-        # 原本 BoutiqueBitmap 不含中文，若仍要它，確保只用於英數。
-        # self.pixel_font = load_font(os.path.join(fonts_dir,'BoutiqueBitmap9x9_Bold_1.9.ttf'), 32)
-
+        # level announce
         self.level_announce_duration = 2.0
         self.level_announce_timer = 0.0
-        # self.level_font = self.pixel_font  # 若需像素英字才打開
 
-        # --- Credits （致謝畫面）---
-        FONT_PATH = cubic_font_path  # 可改成其他字型路徑
-
-        # self.credits_font_title = pygame.font.SysFont(FONT_PATH, 72, bold=True)
-        # self.credits_font_line = pygame.font.SysFont(FONT_PATH, 32)
+        # credits lines
         self.credits_lines = [
             "THANK YOU FOR PLAYING",
             "感謝遊玩本遊戲！",

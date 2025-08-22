@@ -1,6 +1,6 @@
 import pygame
 
-from configs.settings import LAYERS
+from configs.settings import LAYERS, PLAYER_DIR, ENEMY_DIR
 from model.entity.combatant.enemy import Enemy
 from model.entity.combatant.player import Player
 from model.entity.tile import Tile, CollisionTile, MovingPlatform
@@ -135,7 +135,7 @@ class TMXEntityFactory:
                 player = Player(
                     position=(obj.x, obj.y),
                     groups=[self.all_sprites, self.vulnerable_sprites],
-                    path='assets/graphics/player',
+                    path=str(PLAYER_DIR),
                     collision_sprites=self.collision_sprites,
                     shoot=self.shoot_cb
                 )
@@ -146,7 +146,7 @@ class TMXEntityFactory:
         for obj in enemies_buffer:
             Enemy(
                 position=(obj.x, obj.y),
-                path='assets/graphics/enemy',
+                path=str(ENEMY_DIR),
                 groups=[self.all_sprites, self.vulnerable_sprites],
                 shoot=self.shoot_cb,
                 player=player,
