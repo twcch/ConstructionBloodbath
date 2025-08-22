@@ -1,13 +1,16 @@
 import pygame
 from pygame.math import Vector2 as vector
+import random
 
 from model.entity.combatant.base import Combatant
+from model.entity.item import HealItem
 
 
 class Enemy(Combatant):
     def __init__(self, position, path, groups, shoot, player, collision_sprites):
         super().__init__(position, path, groups, shoot)
         self.player = player  # 玩家物件
+        self.collision_sprites = collision_sprites
         for sprite in collision_sprites.sprites():
             if sprite.rect.collidepoint(self.rect.midbottom):
                 self.rect.bottom = self.rect.top + 80  # 確保敵人不會穿過地面
@@ -41,7 +44,18 @@ class Enemy(Combatant):
             # 記錄玩家擊殺
             if hasattr(self, 'player') and hasattr(self.player, 'kill_count'):
                 self.player.kill_count += 1
-                # 或呼叫 self.player.add_kill()
+            # 50% 掉落補血道具
+            if (
+                hasattr(self.player, 'item_sprites') and
+                hasattr(self.player, 'all_sprites') and
+                random.random() < 0.5
+            ):
+                HealItem(
+                    self.rect.center,
+                    self.player.all_sprites,
+                    self.player.item_sprites,
+                    collision_sprites=self.collision_sprites
+                )
             self.kill()
 
     def update(self, dt):
@@ -51,5 +65,4 @@ class Enemy(Combatant):
         self.invul_timer()
         self.shoot_timer()  # 檢查射擊冷卻時間
         self.check_fire()  # 檢查是否可以射擊
-
         self.check_death()

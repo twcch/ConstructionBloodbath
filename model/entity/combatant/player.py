@@ -156,6 +156,14 @@ class Player(Combatant):
         self.shoot_timer()
         self.invul_timer()
 
+        # 撿取補血道具
+        if hasattr(self, 'item_sprites'):
+            hits = pygame.sprite.spritecollide(self, self.item_sprites, dokill=True)
+            for item in hits:
+                heal = getattr(item, 'heal_amount', 1)
+                # 基本上限 10
+                self.health = min(self.health + heal, 10)
+
         # github copilot ------
         # 保存上一幀的平台引用
         self.previous_moving_floor = self.moving_floor

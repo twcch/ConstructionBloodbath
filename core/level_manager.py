@@ -12,32 +12,42 @@ class LevelManager:
         self.level_thresholds = level_thresholds
         self.current_level = 1
         self.player = None
-        self.platform_border_rects = []
+        self.platform_border_rects: list[pygame.Rect] = []
         self.overlay = None
 
+        # sprite groups
         self.all_sprites: AllSprites | None = None
         self.collision_sprites = pygame.sprite.Group()
         self.platform_sprites = pygame.sprite.Group()
         self.bullet_sprites = pygame.sprite.Group()
         self.vulnerable_sprites = pygame.sprite.Group()
+        self.item_sprites = pygame.sprite.Group()  # 道具群組 (掉落 + 撿取)
+
+        # factory & callbacks
         self.factory: TMXEntityFactory | None = None
-        self._shoot_cb = None  # persist shooting callback across rebuilds
+        self._shoot_cb = None
 
     def build_level(self, level: int, shoot_cb=None):
-        """(Re)build level; optionally inject shoot callback."""
+        """重建指定關卡 (可注入射擊 callback)"""
         self.current_level = level
         if shoot_cb:
             self._shoot_cb = shoot_cb
+
         map_path = self.level_maps.get(level, MAIN_MAP)
         if not os.path.exists(map_path):
             map_path = MAIN_MAP
+
         tmx_map = self.assets.tmx(map_path)
         self.all_sprites = AllSprites(self.assets, tmx_map)
+
+        # reset groups (all_sprites 由 AllSprites 重新建立)
         self.collision_sprites.empty()
         self.platform_sprites.empty()
         self.bullet_sprites.empty()
         self.vulnerable_sprites.empty()
+        self.item_sprites.empty()
 
+        # factory
         self.factory = TMXEntityFactory(
             assets=self.assets,
             all_sprites=self.all_sprites,
@@ -46,7 +56,14 @@ class LevelManager:
             vulnerable_sprites=self.vulnerable_sprites,
             shoot_cb=self._shoot_cb
         )
+
         self.player, self.platform_border_rects = self.factory.build_world(map_path)
+
+        if self.player:
+            self.player.item_sprites = self.item_sprites
+            # 讓敵人掉落道具可加入 all_sprites
+            self.player.all_sprites = self.all_sprites
+
         self.overlay = Overlay(self.player)
 
     def inject_shoot(self, shoot_cb):
