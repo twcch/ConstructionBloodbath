@@ -19,7 +19,7 @@ class Player(Combatant):
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
-        self.health = 3
+        self.health = 10
 
     def get_status(self):
         # idle
