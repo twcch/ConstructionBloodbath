@@ -15,7 +15,7 @@ class Player(Combatant):
 
         # vertical movement
         self.gravity = 15  # 重力加速度
-        self.jump_speed = 350  # 跳躍速度
+        self.jump_speed = 600  # 跳躍速度
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
