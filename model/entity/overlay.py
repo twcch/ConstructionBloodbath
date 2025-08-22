@@ -1,5 +1,5 @@
 import pygame
-
+from configs.settings import *
 
 class Overlay:
     def __init__(self, player):
@@ -10,5 +10,5 @@ class Overlay:
     def display(self):
         for h in range(self.player.health):
             x = h * (self.health_surface.get_width() + 5)
-            y = 20
+            y = WINDOW_HEIGHT - 50
             self.display_surface.blit(self.health_surface, (x + 20, y))
