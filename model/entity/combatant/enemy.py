@@ -13,8 +13,6 @@ class Enemy(Combatant):
                 self.rect.bottom = self.rect.top + 80  # 確保敵人不會穿過地面
         self.cooldown = 1000
 
-        self.health = 2
-
     def get_status(self):
         # 檢查玩家位置來決定敵人狀態
         if self.player.rect.centerx < self.rect.centerx:
