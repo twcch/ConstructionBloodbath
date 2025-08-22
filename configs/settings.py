@@ -1,6 +1,7 @@
 FPS = 60
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 TITLE = '- Construction Bloodbath -'
+
 LAYERS = {
     'BG': 0,
     'BG Detail': 1,
@@ -8,11 +9,6 @@ LAYERS = {
     'FG Detail Bottom': 3,
     'FG Detail Top': 4,
 }
-
-# Visual / audio constants
-#BG_COLOR = (35, 20, 50)
-BG_COLOR = (0, 0, 0)  # Black background
-MUSIC_VOLUME = 0.5
 
 # Optional: sprite layer mapping (若你用 sprite.z，可用這個統一)
 Z_LAYERS = {
@@ -22,3 +18,8 @@ Z_LAYERS = {
     'fx': 3,
     'ui': 4,
 }
+
+# Visual / audio constants
+#BG_COLOR = (35, 20, 50)
+BG_COLOR = (0, 0, 0)  # Black background
+MUSIC_VOLUME = 0.5
