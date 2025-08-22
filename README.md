@@ -11,7 +11,7 @@ Enterprise‑grade 2D side‑scrolling shooter built with Python 3.11 and Pygame
 
 ## Overview
 
-Iron Vortex is a fast‑paced single‑player side‑scroll shooter blending classic run‑and‑gun with modern polish. You play as an Ares Unit operative infiltrating Helix Dominion facilities to destroy the ultimate weapon “Iron Vortex.” Core design goals focus on tight input latency, readable combat, scalable content, and clear separation of concerns for maintainability.
+Construction Bloodbath is a fast‑paced single‑player side‑scroll shooter blending classic run‑and‑gun with modern polish. You play as an Ares Unit operative infiltrating Helix Dominion facilities to destroy the ultimate weapon “Iron Vortex.” Core design goals focus on tight input latency, readable combat, scalable content, and clear separation of concerns for maintainability.
 
 ## Features
 
