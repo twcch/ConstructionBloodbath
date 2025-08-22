@@ -17,8 +17,8 @@ class FontManager:
 
 class GameFonts:
     def __init__(self, fm: FontManager):
-        self.title = fm.load(72)
-        self.text = fm.load(32)
+        self.title = fm.load(40)
+        self.text = fm.load(20)
         self.level = fm.load(96)
-        self.credits_title = fm.load(72)
-        self.credits_line = fm.load(32)
+        self.credits_title = fm.load(40)
+        self.credits_line = fm.load(20)

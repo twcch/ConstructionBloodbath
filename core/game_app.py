@@ -33,7 +33,7 @@ class GameApp:
         self.fire_surfs = [self.assets.image(asset_path('graphics', 'fire', f'{i}.png')) for i in range(0, 2)]
 
         # level + HUD
-        level_thresholds = {1: 2, 2: 34, 3: 51}
+        level_thresholds = {1: 17, 2: 34, 3: 51}
         self.level_manager = LevelManager(self.assets, level_thresholds)
         self.hud = HUD(self.fonts)
 
