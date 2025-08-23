@@ -1,5 +1,3 @@
-import sys
-
 import pygame
 from pygame.math import Vector2 as vector
 
@@ -9,20 +7,21 @@ from configs.settings import HEAL_ITEM_CLAM_SOUP_IMG
 
 class Player(Combatant):
     def __init__(self, position, groups, path, collision_sprites, shoot):
-        super().__init__(position, path, groups, shoot)  # Sprite 的建構子就會自動幫你把自己加入到這些 Group 裡
+        super().__init__(position, path, groups, shoot)
 
         # collision
-        self.collision_sprites = collision_sprites  # 碰撞用的群組
+        self.collision_sprites = collision_sprites
 
-        # vertical movement
-        self.gravity = 15  # 重力加速度
-        self.jump_speed = 600  # 跳躍速度
-        self.on_floor = False  # 是否在地面上
-        self.moving_floor = None  # 當前接觸的移動平台
+        # movement / physics
+        self.gravity = 15
+        self.jump_speed = 600
+        self.on_floor = False
+        self.moving_floor = None
 
-        self.health = 10
+        # health
+        self.health = 30
+        self.max_health = 30
         self.is_dead = False
-        # 新增：擊殺計數
         self.kill_count = 0
 
     def get_status(self):
@@ -166,7 +165,7 @@ class Player(Combatant):
                 if getattr(item, 'image_path', None) == HEAL_ITEM_CLAM_SOUP_IMG and self.health < 5:
                     self.health = 0
                 else:
-                    self.health = max(0, min(self.health + heal, 10))
+                    self.health = max(0, min(self.health + heal, self.max_health))
 
         # github copilot ------
         # 保存上一幀的平台引用
