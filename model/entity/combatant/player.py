@@ -20,7 +20,7 @@ class Player(Combatant):
         self.on_floor = False  # 是否在地面上
         self.moving_floor = None  # 當前接觸的移動平台
 
-        self.health = 30
+        self.health = 10
         self.is_dead = False
         # 新增：擊殺計數
         self.kill_count = 0
