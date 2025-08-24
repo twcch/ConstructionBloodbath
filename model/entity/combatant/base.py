@@ -5,6 +5,7 @@ import pygame
 from pygame.math import Vector2 as vector
 
 from configs.settings import *
+from model.service.event_bus import GLOBAL_EVENTS
 
 
 class Combatant(pygame.sprite.Sprite):
@@ -69,9 +70,11 @@ class Combatant(pygame.sprite.Sprite):
             self.is_vulnerable = False
             self.hit_time = pygame.time.get_ticks()
             self.hit_sound.play()  # 播放受傷音效
+            GLOBAL_EVENTS.emit('health_changed', current=self.health, max_hp=getattr(self, 'max_health', self.health), entity_id=id(self))
 
     def check_death(self):
         if self.health <= 0:
+            GLOBAL_EVENTS.emit('entity_died', entity_id=id(self), type=self.__class__.__name__)
             self.kill()
 
     def animate(self, dt):

@@ -59,12 +59,22 @@ def asset_path(*parts: str) -> str:
     """動態組合 assets 內路徑: asset_path('graphics','player','0.png')"""
     return str(ASSETS_DIR.joinpath(*parts))
 
+from enum import IntEnum
+
+class Layer(IntEnum):
+    BG = 0
+    BG_DETAIL = 1
+    LEVEL = 2
+    FG_DETAIL_BOTTOM = 3
+    FG_DETAIL_TOP = 4
+
+# Backward compatible dict access (existing code still uses string keys)
 LAYERS = {
-    'BG': 0,
-    'BG Detail': 1,
-    'Level': 2,
-    'FG Detail Bottom': 3,
-    'FG Detail Top': 4,
+    'BG': Layer.BG,
+    'BG Detail': Layer.BG_DETAIL,
+    'Level': Layer.LEVEL,
+    'FG Detail Bottom': Layer.FG_DETAIL_BOTTOM,
+    'FG Detail Top': Layer.FG_DETAIL_TOP,
 }
 
 # Optional: sprite layer mapping (若你用 sprite.z，可用這個統一)

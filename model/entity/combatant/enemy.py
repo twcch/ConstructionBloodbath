@@ -5,6 +5,7 @@ import random
 from model.entity.combatant.base import Combatant
 from model.entity.item import HealItem
 from configs.settings import HEAL_ITEM_IMG, HEAL_ITEM_BIG_IMG, HEAL_ITEM_SOUP_IMG, HEAL_ITEM_CLAM_SOUP_IMG
+from model.service.event_bus import GLOBAL_EVENTS
 
 
 class Enemy(Combatant):
@@ -45,6 +46,7 @@ class Enemy(Combatant):
             # 記錄玩家擊殺
             if hasattr(self, 'player') and hasattr(self.player, 'kill_count'):
                 self.player.kill_count += 1
+                GLOBAL_EVENTS.emit('enemy_killed', player_id=id(self.player))
             # 50% 掉落 (四擇一: 小/大/特大/蛤蜊湯)
             if hasattr(self.player, 'item_sprites') and hasattr(self.player, 'all_sprites'):
                 if random.random() < 0.5:  # 總掉落率 50%

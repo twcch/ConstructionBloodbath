@@ -3,6 +3,7 @@ from pygame.math import Vector2 as vector
 
 from model.entity.combatant.base import Combatant
 from configs.settings import HEAL_ITEM_CLAM_SOUP_IMG
+from model.service.event_bus import GLOBAL_EVENTS
 
 
 class Player(Combatant):
@@ -160,12 +161,18 @@ class Player(Combatant):
         if hasattr(self, 'item_sprites'):
             hits = pygame.sprite.spritecollide(self, self.item_sprites, dokill=True)
             for item in hits:
-                heal = getattr(item, 'heal_amount', 1)
-                # 若為蛤蜊湯且當前 hp <5 則直接死亡
+                # backward compatibility: handle negative clam soup rule BEFORE generic effect
                 if getattr(item, 'image_path', None) == HEAL_ITEM_CLAM_SOUP_IMG and self.health < 5:
                     self.health = 0
+                    GLOBAL_EVENTS.emit('health_changed', current=self.health, max_hp=self.max_health, entity_id=id(self))
+                    continue
+                # new effect system
+                if hasattr(item, 'pick'):
+                    item.pick(self)
                 else:
+                    heal = getattr(item, 'heal_amount', 1)
                     self.health = max(0, min(self.health + heal, self.max_health))
+                    GLOBAL_EVENTS.emit('health_changed', current=self.health, max_hp=self.max_health, entity_id=id(self))
 
         # github copilot ------
         # 保存上一幀的平台引用

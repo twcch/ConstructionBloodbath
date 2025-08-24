@@ -1,5 +1,6 @@
 import pygame
 from configs.settings import *
+from model.service.event_bus import GLOBAL_EVENTS
 
 
 class Overlay:
@@ -17,11 +18,21 @@ class Overlay:
         except pygame.error:
             self.health_surface = pygame.Surface((32, 32))
             self.health_surface.fill((255, 0, 0))
+        self._cached_health = getattr(player, 'health', 0) if player else 0
+        self._cached_max = getattr(player, 'max_health', self._cached_health)
+        if player:
+            GLOBAL_EVENTS.subscribe('health_changed', self._on_health)
+
+    def _on_health(self, current, max_hp, entity_id):
+        if self.player and entity_id == id(self.player):
+            self._cached_health = current
+            self._cached_max = max_hp
 
     def display(self):
         if not self.player:
             return
-        for h in range(self.player.health):
+        health_value = self._cached_health if self.player else 0
+        for h in range(health_value):
             x = h * (self.health_surface.get_width() + 5)
             y = WINDOW_HEIGHT - 50
             self.display_surface.blit(self.health_surface, (x + 20, y))
