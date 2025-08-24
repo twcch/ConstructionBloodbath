@@ -2,12 +2,16 @@ import pygame
 from pytmx.util_pygame import load_pygame
 from pathlib import Path
 from xml.etree import ElementTree
+import json
+
 
 class AssetManager:
     def __init__(self):
-        self._images: dict[str, pygame.Surface] = {}
-        self._sounds: dict[str, pygame.mixer.Sound] = {}
-        self._tmx: dict[str, object] = {}
+        # caches
+        self._images = {}
+        self._sounds = {}
+        self._tmx = {}
+        self._json = {}
 
     def image(self, path: str) -> pygame.Surface:
         if path not in self._images:
@@ -41,3 +45,12 @@ class AssetManager:
 
             self._tmx[path] = load_pygame(path)
         return self._tmx[path]
+
+    def json(self, path: str):
+        """Load and cache a JSON configuration file.
+
+        Returns parsed python object (dict/list)."""
+        if path not in self._json:
+            with open(path, 'r', encoding='utf-8') as f:
+                self._json[path] = json.load(f)
+        return self._json[path]

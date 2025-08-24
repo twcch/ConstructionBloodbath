@@ -63,6 +63,9 @@ class LevelManager:
             self.player.item_sprites = self.item_sprites
             # 讓敵人掉落道具可加入 all_sprites
             self.player.all_sprites = self.all_sprites
+            # ensure assets reference exists (for json-driven lookups)
+            if not hasattr(self.player, 'assets'):
+                self.player.assets = self.assets
 
         self.overlay = Overlay(self.player)
 

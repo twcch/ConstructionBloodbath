@@ -1,0 +1,13 @@
+{
+  "tables": {
+    "standard_items": [
+      { "image": "objects/台灣啤酒.png", "heal": 1, "weight": 50 },
+      { "image": "objects/台灣啤酒大.png", "heal": 2, "weight": 30 },
+      { "image": "objects/阿堂鹹粥.png", "heal": 5, "weight": 10 },
+      { "image": "objects/蛤蜊湯.png", "heal": -5, "weight": 10 }
+    ]
+  },
+  "global": {
+    "drop_chance": 0.5
+  }
+}

@@ -1,22 +1,37 @@
 import pygame
 from pygame.math import Vector2 as vector
 import random
+from pathlib import Path
 
 from model.entity.combatant.base import Combatant
 from model.entity.item import HealItem
-from configs.settings import HEAL_ITEM_IMG, HEAL_ITEM_BIG_IMG, HEAL_ITEM_SOUP_IMG, HEAL_ITEM_CLAM_SOUP_IMG
+from configs.settings import HEAL_ITEM_IMG, HEAL_ITEM_BIG_IMG, HEAL_ITEM_SOUP_IMG, HEAL_ITEM_CLAM_SOUP_IMG, BASE_DIR
 from model.service.event_bus import GLOBAL_EVENTS
+from typing import Any
 
 
 class Enemy(Combatant):
-    def __init__(self, position, path, groups, shoot, player, collision_sprites):
+    def __init__(self, position, path, groups, shoot, player, collision_sprites, assets=None, kind: str = 'default'):
         super().__init__(position, path, groups, shoot)
         self.player = player  # 玩家物件
         self.collision_sprites = collision_sprites
         for sprite in collision_sprites.sprites():
             if sprite.rect.collidepoint(self.rect.midbottom):
                 self.rect.bottom = self.rect.top + 80  # 確保敵人不會穿過地面
+        # data-driven stats
         self.cooldown = 1000
+        if assets:
+            enemies_cfg_path = str(Path(BASE_DIR) / 'configs' / 'enemies.json')
+            try:
+                enemies_cfg: dict[str, Any] = assets.json(enemies_cfg_path)
+                data = enemies_cfg.get(kind, enemies_cfg.get('default', {}))
+                self.health = data.get('health', self.health)
+                self.cooldown = data.get('cooldown_ms', self.cooldown)
+                self._drop_table_name = data.get('drop_table', 'standard_items')
+            except Exception:
+                self._drop_table_name = 'standard_items'
+        else:
+            self._drop_table_name = 'standard_items'
 
     def get_status(self):
         # 檢查玩家位置來決定敵人狀態
@@ -47,26 +62,47 @@ class Enemy(Combatant):
             if hasattr(self, 'player') and hasattr(self.player, 'kill_count'):
                 self.player.kill_count += 1
                 GLOBAL_EVENTS.emit('enemy_killed', player_id=id(self.player))
-            # 50% 掉落 (四擇一: 小/大/特大/蛤蜊湯)
+            # Data-driven drop logic
             if hasattr(self.player, 'item_sprites') and hasattr(self.player, 'all_sprites'):
-                if random.random() < 0.5:  # 總掉落率 50%
-                    roll = random.random()  # 內部分配: 小50% 大30% 特大10% 負面10%
-                    if roll < 0.5:
-                        heal_amount, path = 1, HEAL_ITEM_IMG
-                    elif roll < 0.8:
-                        heal_amount, path = 2, HEAL_ITEM_BIG_IMG
-                    elif roll < 0.9:
-                        heal_amount, path = 5, HEAL_ITEM_SOUP_IMG
-                    else:
-                        heal_amount, path = -5, HEAL_ITEM_CLAM_SOUP_IMG
-                    HealItem(
-                        self.rect.center,
-                        self.player.all_sprites,
-                        self.player.item_sprites,
-                        collision_sprites=self.collision_sprites,
-                        heal_amount=heal_amount,
-                        image_path=path
-                    )
+                try:
+                    items_cfg_path = str(Path(BASE_DIR) / 'configs' / 'items.json')
+                    drop_cfg = None
+                    if hasattr(self.player, 'assets'):
+                        assets = getattr(self.player, 'assets')
+                        items_cfg = assets.json(items_cfg_path)
+                        tables = items_cfg.get('tables', {})
+                        global_cfg = items_cfg.get('global', {})
+                        drop_chance = float(global_cfg.get('drop_chance', 0.5))
+                        if random.random() < drop_chance:
+                            table = tables.get(getattr(self, '_drop_table_name', 'standard_items'), [])
+                            total = sum(entry.get('weight', 1) for entry in table) or 1
+                            r = random.uniform(0, total)
+                            upto = 0
+                            selected = table[0] if table else None
+                            for entry in table:
+                                upto += entry.get('weight', 1)
+                                if r <= upto:
+                                    selected = entry
+                                    break
+                            if selected:
+                                img_rel = selected.get('image')
+                                heal_amount = int(selected.get('heal', 1))
+                                # resolve path relative to graphics dir
+                                if img_rel and not img_rel.startswith('assets/'):
+                                    path = str(Path(BASE_DIR) / 'assets' / 'graphics' / img_rel)
+                                else:
+                                    path = img_rel
+                                HealItem(
+                                    self.rect.center,
+                                    self.player.all_sprites,
+                                    self.player.item_sprites,
+                                    collision_sprites=self.collision_sprites,
+                                    heal_amount=heal_amount,
+                                    image_path=path
+                                )
+                except Exception:
+                    # fallback silence
+                    pass
             self.kill()
 
     def update(self, dt):

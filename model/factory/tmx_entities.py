@@ -150,7 +150,9 @@ class TMXEntityFactory:
                 groups=[self.all_sprites, self.vulnerable_sprites],
                 shoot=self.shoot_cb,
                 player=player,
-                collision_sprites=self.collision_sprites
+                collision_sprites=self.collision_sprites,
+                assets=self.assets,
+                kind=getattr(obj, 'type', 'default') or 'default'
             )
 
         # moving platforms + borders
@@ -165,4 +167,7 @@ class TMXEntityFactory:
             else:
                 platform_border_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
 
+        # attach assets reference for data-driven lookups
+        if player:
+            player.assets = self.assets
         return player, platform_border_rects
