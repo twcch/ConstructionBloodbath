@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 
 """全域設定與資源路徑集中管理
 
@@ -13,7 +14,11 @@ WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 TITLE = '工   地   血   戰'
 
 # ---- 專案根目錄與資源資料夾 ----
-BASE_DIR = Path(__file__).resolve().parent.parent  # 專案根 (configs/ 的上層)
+# 在 PyInstaller frozen 環境下，資源會被解壓到臨時資料夾 sys._MEIPASS
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    BASE_DIR = Path(sys._MEIPASS)  # type: ignore[attr-defined]
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent  # 專案根 (configs/ 的上層)
 ASSETS_DIR = BASE_DIR / 'assets'
 GFX_DIR = ASSETS_DIR / 'graphics'
 AUDIO_DIR = ASSETS_DIR / 'audio'

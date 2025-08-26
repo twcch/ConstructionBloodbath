@@ -43,11 +43,17 @@ class Combatant(pygame.sprite.Sprite):
         self.hit_time = None  # 用來記錄被擊中的時間
         self.invul_duration = 500
 
-        # audio
-        self.hit_sound = pygame.mixer.Sound('assets/audio/hit.wav')
-        self.hit_sound.set_volume(0.2)  # 設置音量
-        self.shoot_sound = pygame.mixer.Sound('assets/audio/bullet.wav')
-        self.shoot_sound.set_volume(0.2)  # 設置音量
+        # audio (集中資源路徑)
+        try:
+            self.hit_sound = pygame.mixer.Sound(asset_path('audio', 'hit.wav'))
+            self.hit_sound.set_volume(0.2)
+        except Exception:
+            self.hit_sound = None
+        try:
+            self.shoot_sound = pygame.mixer.Sound(asset_path('audio', 'bullet.wav'))
+            self.shoot_sound.set_volume(0.2)
+        except Exception:
+            self.shoot_sound = None
 
     def blink(self):
         if not self.is_vulnerable:
