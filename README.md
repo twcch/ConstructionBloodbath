@@ -1,53 +1,67 @@
 # Construction Bloodbath (工地血戰)
 
-Enterprise‑grade 2D side‑scrolling shooter built with Python 3.11 and Pygame. This repository contains a production‑ready foundation for a Contra‑like action game featuring responsive controls, modular architecture, data‑driven levels, and an assets pipeline optimized for iteration.
-
-- Runtime: Python 3.11 + Pygame
-- Entry point: [app.py](app.py)
-- Config: [configs/settings.py](configs/settings.py)
-- Assets: [assets/](assets), Maps: [assets/data/map.tmx](assets/data/map.tmx), Tilesets: [assets/data/Platforms.tsx](assets/data/Platforms.tsx), [assets/data/Subway_tiles_x4.tsx](assets/data/Subway_tiles_x4.tsx), [assets/data/wall_subway.tsx](assets/data/wall_subway.tsx)
-- Dependencies: [requirements.txt](requirements.txt)
-- License: [LICENSE](LICENSE)
-
-## Overview
-
-Construction Bloodbath is a fast‑paced single‑player side‑scroll shooter blending classic run‑and‑gun with modern polish. You play as an Ares Unit operative infiltrating Helix Dominion facilities to destroy the ultimate weapon “Iron Vortex.” Core design goals focus on tight input latency, readable combat, scalable content, and clear separation of concerns for maintainability.
+Enterprise-grade 2D side-scrolling shooter built with Python 3.11 and Pygame.
+This repository provides a production-ready foundation for a Contra-style action game, featuring responsive controls, modular architecture, data-driven levels, and an asset pipeline optimized for iteration.
 
 ## Features
 
-- Tight movement and combat loop (move, jump, shoot; responsive and predictable)
-- Weapon system with level‑up and timed decay mechanics (spec in docs)
-- Enemy compositions (infantry, heavy infantry, bosses — see docs)
-- Data‑driven level layout via Tiled: [assets/data/map.tmx](assets/data/map.tmx), tilesets in [assets/data/](assets/data)
-- Audio/visual feedback: SFX ([assets/audio/](assets/audio)), sprites ([assets/graphics/](assets/graphics))
-- Configuration‑first runtime via [configs/settings.py](configs/settings.py)
-- Deterministic startup and asset smoke checks: [scripts/smoke_test_assets.py](scripts/smoke_test_assets.py)
+- Smooth movement / jumping / shooting loops (predictable and responsive)
+- Data-driven maps: Tiled TMX/TSX ([assets/data/map.tmx](assets/data/map.tmx))
+- Clear layered architecture: Application / Domain / Config / Assets
+- Centralized adjustable parameters in [configs/settings.py](configs/settings.py)
+- Sprite / sound asset loading with startup validation (extensible)
+- Encapsulated scene and level management ([core/scene_manager.py](core/scene_manager.py), [core/level_manager.py](core/level_manager.py))
+- Extensible Entity / Factory / Service patterns ([model/entity/](model/entity), [model/factory/](model/factory), [model/service/](model/service))
+- HUD / UI example ([ui/hud.py](ui/hud.py))
+- MIT License allowing commercial use and derivative works ([LICENSE](LICENSE))
 
-## Architecture
+## Goals & Design Philosophy
 
-Layered, modular organization designed for clarity and extendability:
+- Data first: values and tuning live in configs or data files, not hard-coded.
+- Hot-swappable content: add sprites, levels, or enemy types without touching the main loop.
+- Separation of rendering and logic: supports alternative rendering layers or performance profiling.
+- Clear lifecycle: startup, asset load, scene push/pop, level reset.
 
-- Application layer
-  - [app.py](app.py): process bootstrap, game loop orchestration, scene lifecycle
-- Domain layer
-  - [model/entity/](model/entity): game entities (player, enemies, projectiles, tiles)
-  - [model/service/](model/service): domain services (collision, physics, spawning, combat rules)
-  - [model/factory/](model/factory): factories/builders for entities and level objects
-- Configuration layer
-  - [configs/settings.py](configs/settings.py): runtime constants, rendering, input, tuning params
-- Assets and Data
-  - [assets/data/](assets/data): Tiled TMX/TSX maps and tilesets
-  - [assets/graphics/](assets/graphics): sprites and UI art
-  - [assets/audio/](assets/audio): music and sound effects
+## Project Structure
 
-This separation keeps the game loop lean, isolates domain logic, and allows content iteration without code changes.
+```
+ConstructionBloodbath/
+├─ app.py                       # Entry point: initialization, main loop, scene dispatch
+├─ configs/
+│  └─ settings.py               # Global configuration and tuning parameters
+├─ core/
+│  ├─ game_app.py               # High-level application wrapper
+│  ├─ scene_manager.py          # Scene stack / transitions
+│  └─ level_manager.py          # Level loading and reset
+├─ model/
+│  ├─ entity/                   # Game entities
+│  ├─ factory/                  # Builders / assemblers
+│  └─ service/                  # Logic services (collision, physics, combat, etc.)
+├─ ui/
+│  └─ hud.py                    # HUD / UI
+├─ assets/
+│  ├─ data/                     # Tiled: map.tmx / *.tsx
+│  ├─ graphics/                 # Sprites and animations
+│  └─ audio/                    # Sound effects / music
+└─ build/                       # (Optional) packaged artifacts / cross-reference outputs
 
-## Getting Started
+```
+
+## Key Modules
+
+- Entry point: [app.py](app.py)
+- Configuration: [configs/settings.py](configs/settings.py)
+- Core loop: [core/game_app.py](core/game_app.py)
+- Scene management: [core/scene_manager.py](core/scene_manager.py)
+- Level management: [core/level_manager.py](core/level_manager.py)
+- HUD: [ui/hud.py](ui/hud.py)
+
+## Setup
 
 ### Prerequisites
 
 - Python 3.11
-- pip, venv (or your environment manager of choice)
+- pip / venv
 
 ### Installation
 
@@ -60,56 +74,99 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-If the smoke test passes, assets are present and loadable.
+## Run & Debug
 
-## Configuration
-
-All runtime configuration lives in [configs/settings.py](configs/settings.py). Typical parameters include:
-- Window/screen settings (resolution, caption, FPS)
-- Input mappings
-- Physics and tuning (gravity, move speed, jump force)
-- Combat tuning (damage, cooldowns, projectile speeds)
-- Content toggles and debug flags
-
-Adopt a configuration‑first workflow: tune values in config, keep constants out of game loop code.
-
-## Run and Debug
-
-- Run from terminal:
+### Direct execution
 
 ```sh
 python app.py
 ```
 
-- In VS Code: open the workspace, run [app.py](app.py) with the built‑in debugger (recommended). Use the integrated terminal and Output pane for logs.
+### VS Code
 
-## Assets and Maps
+- Open the project folder
+- Run [app.py](app.py) in debug mode
+- Use “Terminal” and “Output” to inspect logs
 
-- Levels authored in Tiled: [assets/data/map.tmx](assets/data/map.tmx), tilesets in [assets/data/](assets/data)
-- Graphics: [assets/graphics/](assets/graphics) (e.g., bullet sprite at [assets/graphics/bullet.png](assets/graphics/bullet.png))
-- Audio: [assets/audio/](assets/audio) (e.g., [bullet.wav](assets/audio/bullet.wav), [hit.wav](assets/audio/hit.wav), [music.wav](assets/audio/music.wav))
+## Configuration
 
-## Project Structure
+Centralized in [configs/settings.py](configs/settings.py):
 
-```
-ConstructionBloodbath/
-├─ app.py
-├─ requirements.txt
-├─ configs/
-│  └─ settings.py
-├─ model/
-│  ├─ entity/
-│  ├─ factory/
-│  └─ service/
-└─ assets/
-   ├─ audio/
-   ├─ graphics/
-   └─ data/
-      ├─ map.tmx
-      ├─ Platforms.tsx
-      ├─ Subway_tiles_x4.tsx
-      └─ wall_subway.tsx
-```
+- Window: resolution, title, FPS
+- Input mapping
+- Physics: gravity, movement speed, jump force
+- Combat: damage, cooldown, fire rate
+- Debug toggles and flags
+- Tuning workflow:
+
+Adjust parameters:
+
+- Restart or hot-reload (if implemented)
+- Verify gameplay feel / performance
+
+## Game Loop (Overview)
+
+- Collect events (input)
+- Update states (physics / AI / shooting / timers)
+- Handle collisions and outcomes
+- Evaluate scene / level conditions
+- Render (background / entities / UI)
+
+Scenes are managed by [core/scene_manager.py](core/scene_manager.py) ; levels are loaded and reset by [core/level_manager.py](core/level_manager.py).
+
+## Assets & Data
+
+- Maps: [assets/data/map.tmx](assets/data/map.tmx) with corresponding tilesets (e.g. [assets/data/Platforms.tsx](assets/data/Platforms.tsx), [assets/data/Subway_tiles_x4.tsx](assets/data/Subway_tiles_x4.tsx), [assets/data/wall_subway.tsx](assets/data/wall_subway.tsx))
+- Graphics: [assets/graphics/](assets/graphics/)
+- Audio: [assets/audio/](assets/audio/)
+- Fonts: [assets/font/](assets/font/)
+ (including CJK fonts if needed)
+
+Naming conventions:
+
+- Animation sequences: direction/state/frame (e.g. player/right/0.png)
+- Separate static objects, interactive objects, and enemy folders
+
+
+
+## Extension Guidelines
+
+| Type | Suggested Steps |
+| ---- | -------- |
+| New enemy | Add model/entity/... → Factory instantiation → Configure behavior service |
+| New weapon | Define attributes → Shooting/Projectile service → Bind to input mapping |
+| New level | Create TMX in Tiled → Place into assets/data → Load via Level Manager |
+| New UI item | Implement UI class → Inject into render pipeline → Use config parameters |
+
+## Build / Distribution
+
+When packaging with PyInstaller (or similar), place outputs in [build/](build).
+
+Guidelines:
+- Use relative paths for assets (avoid hard-coding absolute paths)
+- Exclude unused heavy dependencies from the binary
+- Test cross-platform font/encoding support
+
+## Validation
+
+Basic smoke tests:
+- Start without exceptions
+- Sprites and audio load correctly
+- Characters can move / jump / shoot
+- Scene transitions are smooth
+
+Can be gradually added:
+- Units: numerical calculations / services (collision, cooldown)
+- Behaviors: AI decision-making
+- Regression: level nodes / event triggers
+
+## Roadmap
+
+- More comprehensive event bus / system events
+- Plug-in AI behavior trees
+- Save / Load profile
+- Particle systems and post-processing
+- Net code (for potential multiplayer)
 
 ## Contributing
 
