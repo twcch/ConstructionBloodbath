@@ -1,3 +1,7 @@
+# Ignore documentation / assets for language stats
 *.html linguist-detectable=false
 *.tex  linguist-detectable=false
 *.json linguist-detectable=false
+
+# Force Python as the main language
+*.py linguist-language=Python
