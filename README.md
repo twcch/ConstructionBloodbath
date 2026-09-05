@@ -194,6 +194,6 @@ python app.py
 
 如有任何疑問或建議，歡迎透過以下方式聯絡：
 
-- **Email**: twcch1218 [at] twcch.io
+- **Email**: twcch1218 [at] gmail.com
 
 感謝您對《ConstructionBloodbath (工地血戰)》的關注！
